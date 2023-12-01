@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addons>
-<addon id="plugin.video.vstream" name="vStream" version="2.7.4" provider-name="venom-xbmc-addons">
+<addon id="plugin.video.vstream" name="vStream Mod" version="2.7.4~nathan" provider-name="venom-xbmc-addons">
     <requires>
 
         <trycatch>
@@ -12,7 +12,7 @@
                 <import addon="xbmc.python" version="2.24.0"/>
             </catch>
         </trycatch>
-        <import addon="repository.vstream"/>
+        <import addon="repository.vstream.mod"/>
         <import addon="script.module.pyqrcode"/>
         <import addon="script.module.requests"/>
         <import addon="script.module.dnspython" optional="true"/>
@@ -79,16 +79,16 @@
     </extension>
 </addon>
 
-<addon id="repository.vstream"
-       name="vStream Repository"
-        version="0.0.6"
+<addon id="repository.vstream.mod"
+        name="vStream Mod Repository"
+        version="1.0.6~nathan"
         provider-name="Venom">
     <extension point="xbmc.addon.repository" name="vStream XBMC Addon Repository">
-    <dir>
-        <info compressed="false">https://raw.githubusercontent.com/Kodi-vStream/venom-xbmc-addons/master/addons.xml</info>
-        <checksum>https://raw.githubusercontent.com/Kodi-vStream/venom-xbmc-addons/master/addons.xml.md5</checksum>
-        <datadir zip="true">https://github.com/Kodi-vStream/venom-xbmc-addons/raw/master/repo</datadir>
-    </dir>
+        <dir>
+            <info compressed="false">https://raw.githubusercontent.com/nat80/vstream/master/addons.xml</info>
+            <checksum>https://raw.githubusercontent.com/nat80/vstream/master/addons.xml.md5</checksum>
+            <datadir zip="true">https://github.com/nat80/vstream/raw/master/repo</datadir>
+        </dir>
    </extension>
 
     <extension point="xbmc.addon.metadata">
@@ -97,6 +97,10 @@
         <summary lang="en">vStream Repository</summary>
         <description lang="en">Download and install vStream</description>
         <platform>all</platform>
+        <assets>
+            <icon>icon.png</icon>
+            <fanart>fanart.jpg</fanart>
+        </assets>
     </extension>
 </addon>
 </addons>

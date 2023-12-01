@@ -7,6 +7,10 @@ import threading
 import time
 import xbmc
 import xbmcvfs
+import re
+import requests
+import ast
+import copy
 
 from resources.lib.comaddon import progress, addon, dialog, VSlog, VSPath, isMatrix, siteManager
 from resources.lib.handler.inputParameterHandler import cInputParameterHandler
@@ -2422,44 +2426,64 @@ def showEpisodesLinks(siteUrl=''):
         oGui.addEpisode(SITE_IDENTIFIER, 'showHosters', sDisplayTitle, 'series.png', '', '', oOutputParameterHandler)
 
     oGui.setEndOfDirectory()
+    
+def getCleanReleaseNameByUrl(sHosterUrl):
+    sReleaseName = sHosterUrl.split('/')[-1]
+    sReleaseName = Unquote(sReleaseName)
+    sOriginalReleaseName = sReleaseName
+    # regex pour garder seulement ce qu'il y a après la date
+    dateEpisodesPattern = r"(?:\d{4}|S\d{1,2}E\d{1,2})(?:[\s.()\[\]-]*)(.*)"
+    match = re.search(dateEpisodesPattern, sReleaseName)
+    if match:
+        sReleaseName = match.group(1).strip()
+    # regex pour retirer l'id TMDB du film
+    tmPattern = r"TM\d+TM"
+    sReleaseName = re.sub(tmPattern, '', sReleaseName)
+    # On retire les '.mkv', on garde les .mp4
+    sReleaseName = re.sub(r'.mkv', '', sReleaseName)
+    # On retire les points + espaces en fin de nom
+    sReleaseName = re.sub(r'[.\s]+$', '', sReleaseName)
+    if len(sReleaseName) < 20:
+        sReleaseName = sOriginalReleaseName+" "
+    return sReleaseName
+    
+def getSizeByUrl(url):
+    try:
+        response = requests.head(url)
+        iSizeFile = int(response.headers.get('content-length', 0))
+    except:
+        iSizeFile = 0
+    return iSizeFile
 
 
 def showHosters():
     oGui = cGui()
-    from resources.lib.gui.hoster import cHosterGui
-    oHosterGui = cHosterGui()
     oInputParameterHandler = cInputParameterHandler()
     sTitle = oInputParameterHandler.getValue('sMovieTitle').replace(' | ', ' & ')
     siteUrl = oInputParameterHandler.getValue('siteUrl')
     listRes = getHosterList(siteUrl)
 
     oOutputParameterHandler = cOutputParameterHandler()
-
+    
+    # Associer les valeurs de '2160P' et 'UHD' avec '4K'
+    for key in ['2160P', 'UHD']:
+        if key in listRes:
+            if '4K' not in listRes:
+                listRes['4K'] = []
+            listRes['4K'].extend(listRes[key])
+            del listRes[key]
+    
     # Pre-trie pour insérer les résolutions inconnues, puis refaire un deuxième trie
     sorted(listRes.keys(), key=trie_res)
     for res in sorted(listRes.keys(), key=trie_res):
-        for sHosterUrl, lang in listRes[res]:
-            sUrl = sHosterUrl
-    
-            sDisplayName = sTitle
-            if res:
-                oOutputParameterHandler.addParameter('sRes', res)
-                displayRes = res.replace('P', 'p').replace('1080p', 'fullHD').replace('720p', 'HD').replace('2160p', '4K').replace('WEB', 'HD')
-                sDisplayName += ' [%s]' % displayRes
-            if lang:
-                sDisplayName += ' (%s)' % lang
-    
-            link, paste, movies = sUrl.split('|')
-            if movies == 'FALSE':
-                oHoster = oHosterGui.checkHoster(link)
-                if oHoster:
-                    oHoster.setDisplayName(sDisplayName)
-                    oHoster.setFileName(sTitle)
-                    oHosterGui.showHoster(oGui, oHoster, link, '')
-            else:
-                oOutputParameterHandler.addParameter('siteUrl', sUrl)
-                oOutputParameterHandler.addParameter('sMovieTitle', sTitle)
-                oGui.addLink(SITE_IDENTIFIER, 'showHoster', sDisplayName, 'host.png', '', oOutputParameterHandler)
+        oOutputParameterHandler.addParameter('sMovieTitle', sTitle)
+        oOutputParameterHandler.addParameter('lsHosterUrl', listRes[res])
+        if res == "":
+            res = "AUTRES"
+        oOutputParameterHandler.addParameter('sRes', res)
+        sDisplayName = sTitle
+        sDisplayName += ' [%s]' % res
+        oGui.addLink(SITE_IDENTIFIER, 'showHoster', sDisplayName, 'host.png', '', oOutputParameterHandler)
     oGui.setEndOfDirectory()
 
 
@@ -2470,25 +2494,46 @@ def showHoster():
     pbContent = PasteContent()
     oInputParameterHandler = cInputParameterHandler()
     sTitle = oInputParameterHandler.getValue('sMovieTitle')
-    link, paste, pbContent.movies = oInputParameterHandler.getValue('siteUrl').split('|')
     hosterLienDirect = oHosterGui.getHoster('lien_direct')
-
-    resolvedLinks = pbContent.resolveLink(paste, link)
-    for sHosterUrl, res, lang in resolvedLinks:
-        if sHosterUrl:
-            if not sHosterUrl.startswith('http'):
-                sHosterUrl = 'http://' + sHosterUrl
     
-            if '/dl/' in sHosterUrl or '.download.' in sHosterUrl or '.uptostream.' in sHosterUrl:
-                oHoster = hosterLienDirect
-            else:
-                oHoster = oHosterGui.checkHoster(sHosterUrl)
+    lHosterUrl = oInputParameterHandler.getValue('lsHosterUrl')
+    lHosterUrl = ast.literal_eval(lHosterUrl)
+    mapHoster = {}
+    for sHosterUrl, lang in lHosterUrl:
+        link, paste, pbContent.movies = sHosterUrl.split('|')
+        resolvedLinks = pbContent.resolveLink(paste, link)
+        
+        for sHosterUrl, res, lang in resolvedLinks:
+            if sHosterUrl:
+                if not sHosterUrl.startswith('http'):
+                    sHosterUrl = 'http://' + sHosterUrl
+            
+                if '/dl/' in sHosterUrl or '.download.' in sHosterUrl or '.uptostream.' in sHosterUrl:
+                    oHoster = hosterLienDirect
+                else:
+                    oHoster = oHosterGui.checkHoster(sHosterUrl)
+        
+                if oHoster:
+                    sDisplayName = sTitle
+                    iSize = getSizeByUrl(sHosterUrl)
+                    if iSize :
+                        sCleanReleaseName = getCleanReleaseNameByUrl(sHosterUrl)
+                        # Pas besoin de traiter la suite si le titre contient moins d'info que celui déjà présent de la même taille
+                        if iSize in mapHoster and len(sTitle) <= len(mapHoster[iSize][2]):
+                            continue
+                        sDiplaySize = ''
+                        sSizeGo = str(round( iSize / 1_000_000_000,1 ))
+                        sDiplaySize = sSizeGo+'Go'
+                        sDisplayName = sDisplayName +' [%s]' % sDiplaySize
+                        oHoster.setSize(iSize)
+                        oHoster.setDisplayName(sDisplayName)
+                        oHoster.setFileName(sTitle)
+                        oHoster.setReleaseName(sCleanReleaseName)
+                        mapHoster[iSize] = (copy.copy(oHoster), sHosterUrl, sCleanReleaseName)
     
-            if oHoster:
-                sDisplayName = sTitle
-                oHoster.setDisplayName(sDisplayName)
-                oHoster.setFileName(sTitle)
-                oHosterGui.showHoster(oGui, oHoster, sHosterUrl, '')
+    mSortedSize = sorted(mapHoster.items(), key=lambda x: x[0], reverse=True)
+    for iSize, (oHoster, sHosterUrl, sCleanReleaseName) in mSortedSize:
+        oHosterGui.showHoster(oGui, oHoster, sHosterUrl, '')
 
     oGui.setEndOfDirectory()
 

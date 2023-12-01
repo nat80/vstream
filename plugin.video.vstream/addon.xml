@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.vstream" name="vStream" version="2.7.4" provider-name="venom-xbmc-addons">
+<addon id="plugin.video.vstream" name="vStream Mod" version="2.7.4~nathan" provider-name="venom-xbmc-addons">
     <requires>
 
         <trycatch>
@@ -11,7 +11,7 @@
                 <import addon="xbmc.python" version="2.24.0"/>
             </catch>
         </trycatch>
-        <import addon="repository.vstream"/>
+        <import addon="repository.vstream.mod"/>
         <import addon="script.module.pyqrcode"/>
         <import addon="script.module.requests"/>
         <import addon="script.module.dnspython" optional="true"/>

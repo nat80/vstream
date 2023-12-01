@@ -70,7 +70,20 @@ class cGuiElement:
         # categorie utilisé pour marque-page et recherche.
         # 1 - movies/saga , 2 - tvshow/episode/anime, 5 - misc/Next
         self.__sCat = ''
+        self.__sSize = 0
+        self.__sReleaseName = ''
 
+    def setSize(self, sSize):
+        self.__sSize = sSize
+
+    def getSize(self):
+        return self.__sSize
+
+    def setReleaseName(self, sReleaseName):
+        self.__sReleaseName = sReleaseName
+
+    def getReleaseName(self):
+        return self.__sReleaseName
     # def __len__(self): return self.__sCount
 
     # def getCount(self):
@@ -728,7 +741,19 @@ class cGuiElement:
 
         if self.getEpisode():
             self.addItemValues('episode', int(self.getEpisode()))
+        
+        # Pour ajouter la taille en label 2 dans le player tmdb :
+        # if self.getSize():
+        #     self.addItemProperties('size', int(self.getSize()))
 
+        if self.getReleaseName():
+            # Ancienne méthode: pour ajouter le nom du fichier en label2 en passant par "firstaired" pour le player tmdb
+            # self.addItemProperties('firstaired', self.getReleaseName())
+            
+            # pour le mode liste de fichiers vstream on passe la releaseName par la classification mpaa
+            # Ensuite on peut s'en servir pour le player tmdb également en le passant dans la langue audio du streamdetails
+            self.addItemValues('mpaa', self.getReleaseName())
+        
         return self.__aItemValues
 
     def addItemProperties(self, sPropertyKey, mPropertyValue):

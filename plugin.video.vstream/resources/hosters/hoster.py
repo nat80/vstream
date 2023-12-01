@@ -15,6 +15,20 @@ class iHoster:
         self.color = color
         self._url = None
         self._mediaFile = None
+        self._fileSize = None
+        self._releaseName = None
+
+    def setReleaseName(self, releaseName):
+        self._releaseName = releaseName
+    
+    def getReleaseName(self):
+        return self._releaseName
+
+    def getSize(self):
+        return self._fileSize
+
+    def setSize(self, size):     
+        self._fileSize = size
 
     def getPluginIdentifier(self):
         return self._pluginIdentifier

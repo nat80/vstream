@@ -449,7 +449,14 @@ class cGui:
             videoInfoTag.setResumePoint(float(data.get('resumetime', 0.0)), float(data.get('totaltime', 0.0)))
 
             videoInfoTag.setCast(data.get('cast', []))
-
+            
+            # On passe par un objet xbmc.AudioStreamDetail pour pouvoir ajouter la releaseName dans la langue via mpaa
+            audiostream = xbmc.AudioStreamDetail(channels=0, language=data.get('mpaa', ""))
+            videoInfoTag.addAudioStream(audiostream)
+            # Test pour afficher le tag HDR
+            # videostream = xbmc.VideoStreamDetail(hdrtype='hdr10')
+            # oListItem.addVideoStream(videostream)
+            
         oListItem.setArt({'poster': oGuiElement.getPoster(),
                           'thumb': oGuiElement.getThumbnail(),
                           'icon': oGuiElement.getIcon(),

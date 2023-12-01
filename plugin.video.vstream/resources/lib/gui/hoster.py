@@ -37,6 +37,9 @@ class cHosterGui:
         oGuiElement = cGuiElement()
         oGuiElement.setSiteName(self.SITE_NAME)
         oGuiElement.setFunction('play')
+        
+        oGuiElement.setSize(oHoster.getSize())
+        oGuiElement.setReleaseName(oHoster.getReleaseName())
 
         # Catégorie de lecture
         if oInputParameterHandler.exist('sCat'):

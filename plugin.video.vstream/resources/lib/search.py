@@ -29,6 +29,18 @@ class cSearch:
 
             if len(listPlugins) == 0:
                 return True
+            
+            # Pour mettre pastebin en 1er dans les résulats
+            # Trouver l'index de l'élément avec l'identificateur "pastebin"
+            index_pastebin = None
+            for i, plugin in enumerate(listPlugins):
+                if plugin['identifier'] == 'pastebin':
+                    index_pastebin = i
+                    break
+            # Si l'élément "pastebin" est trouvé, le déplacer en premier
+            if index_pastebin is not None:
+                pastebin_plugin = listPlugins.pop(index_pastebin)
+                listPlugins.insert(0, pastebin_plugin)
 
             listThread = self._launchSearch(listPlugins, self._pluginSearch, [Quote(sSearchText), True])
             self._finishSearch(listThread)
