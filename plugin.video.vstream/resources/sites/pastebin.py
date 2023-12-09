@@ -75,16 +75,16 @@ PYVERSION = platform.python_version()
 VSlog('Pastebin - Python version : ' + PYVERSION)
 if '3.10' in PYVERSION:
     REALCACHE = VSPath(CACHE)
-    PATH = 'special://home/addons/plugin.video.vstream/resources/lib/pasteCrypt310.pyc'
+    PATH = 'special://home/addons/plugin.video.vstream/resources/lib/pasteDeCrypt310.py'
 elif '3.11' in PYVERSION:
     REALCACHE = VSPath(CACHE)
-    PATH = 'special://home/addons/plugin.video.vstream/resources/lib/pasteCrypt311.pyc'
+    PATH = 'special://home/addons/plugin.video.vstream/resources/lib/pasteDeCrypt311.py'
 elif '2.' in PYVERSION:
     REALCACHE = VSPath(CACHE).decode('utf-8')
     PATH = 'special://home/addons/plugin.video.vstream/resources/lib/pasteCrypt2.pyc'
 else:  # autre Versions 3.0x
     REALCACHE = VSPath(CACHE)
-    PATH = 'special://home/addons/plugin.video.vstream/resources/lib/pasteCrypt3.pyc'
+    PATH = 'special://home/addons/plugin.video.vstream/resources/lib/pasteDeCrypt3.py'
 
 
 # Pour le multithreading
@@ -551,7 +551,7 @@ class PasteContent:
 
     def _getCrypt(self):
         if not self.chiffrer:
-            self.chiffrer = imp.load_compiled("Chiffrage", VSPath(PATH)).Crypt()
+            self.chiffrer = imp.load_source("Chiffrage", VSPath(PATH)).Crypt()
         return self.chiffrer
 
     def _getCache(self):
