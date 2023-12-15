@@ -2473,6 +2473,14 @@ def showHosters():
             listRes['4K'].extend(listRes[key])
             del listRes[key]
     
+    #Source JYA
+    oOutputParameterHandler.addParameter('sMovieTitle', sTitle)
+    res = "JYA"
+    oOutputParameterHandler.addParameter('sRes', res)
+    sDisplayName = sTitle
+    sDisplayName += ' [%s]' % res
+    oGui.addLink(SITE_IDENTIFIER, 'showJYAlink', sDisplayName, 'host.png', '', oOutputParameterHandler)
+    
     # Pre-trie pour insérer les résolutions inconnues, puis refaire un deuxième trie
     sorted(listRes.keys(), key=trie_res)
     for res in sorted(listRes.keys(), key=trie_res):
@@ -2485,7 +2493,53 @@ def showHosters():
         sDisplayName += ' [%s]' % res
         oGui.addLink(SITE_IDENTIFIER, 'showHoster', sDisplayName, 'host.png', '', oOutputParameterHandler)
     oGui.setEndOfDirectory()
+    
+def get_link_JYA(movie_query):
+    url = 'http://127.0.0.1:5000/get_movie_links'
+    params = {'query': movie_query}
+    
+    try:
+        response = requests.get(url, params=params)
+    except Exception as e:
+        dialog().VSinfo("La connexion à JYA a échouée")
+        raise
 
+    if response.status_code == 200:
+        response_data = response.json()
+        # release_name = response_data.get('data', {}).get('filename', None)
+        movie_link = response_data.get('data', {}).get('link', '')
+        size_file = response_data.get('data', {}).get('filesize', None)
+        
+    else:
+        VSlog("Erreur lors de la requête. Code d'erreur : " + response.text)
+    return movie_link, size_file
+
+def showJYAlink():
+    from resources.lib.gui.hoster import cHosterGui
+    oHosterGui = cHosterGui()
+    oGui = cGui()
+    oInputParameterHandler = cInputParameterHandler()
+    sTitle = oInputParameterHandler.getValue('sMovieTitle')
+    VSlog("Titre à chercher : ")
+    VSlog(sTitle)
+    movie_link, size_file = get_link_JYA(sTitle)
+    VSlog(movie_link)
+    if movie_link is not None:
+        oHoster = oHosterGui.checkHoster(movie_link)
+        VSlog(oHoster)
+        sDisplayName = sTitle
+        VSlog(size_file)
+        sCleanReleaseName = getCleanReleaseNameByUrl(movie_link)
+        sDiplaySize = ''
+        sSizeGo = str(round( size_file / 1_073_741_824,1 ))
+        sDiplaySize = sSizeGo+'Go'
+        sDisplayName = sDisplayName +' [%s]' % sDiplaySize
+        oHoster.setSize(size_file)
+        oHoster.setDisplayName(sDisplayName)
+        oHoster.setFileName(sTitle)
+        oHoster.setReleaseName(sCleanReleaseName)
+        oHosterGui.showHoster(oGui, oHoster, movie_link, '')
+    oGui.setEndOfDirectory()
 
 def showHoster():
     from resources.lib.gui.hoster import cHosterGui
@@ -2522,7 +2576,8 @@ def showHoster():
                         if iSize in mapHoster and len(sTitle) <= len(mapHoster[iSize][2]):
                             continue
                         sDiplaySize = ''
-                        sSizeGo = str(round( iSize / 1_000_000_000,1 ))
+                        VSlog(iSize)
+                        sSizeGo = str(round( iSize / 1_073_741_824,1 ))
                         sDiplaySize = sSizeGo+'Go'
                         sDisplayName = sDisplayName +' [%s]' % sDiplaySize
                         oHoster.setSize(iSize)

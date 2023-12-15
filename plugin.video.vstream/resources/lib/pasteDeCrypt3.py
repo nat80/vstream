@@ -6,7 +6,7 @@
 import requests
 import re
 import random
-from resources.lib.comaddon import addon
+from resources.lib.comaddon import addon, VSlog
 from resources.lib.handler.requestHandler import cRequestHandler
 from resources.lib.util import cUtil
 
@@ -141,6 +141,7 @@ class Crypt:
             linkF = [(url + code, 'ori', 'ori')]
             status = 'ok'
         elif mode == 0:
+            VSlog(url+code)
             linkF, status = self._linkDownloadAlldebrid(key, url + code)
         elif mode == 1:
             linkF, status = self._linkDownloadRealdebrid(key, url + code)
