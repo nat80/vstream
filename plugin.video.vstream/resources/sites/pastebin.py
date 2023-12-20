@@ -2455,6 +2455,112 @@ def getSizeByUrl(url):
         iSizeFile = 0
     return iSizeFile
 
+def getVideoStreamDetail(sCleanReleaseName):
+    videoStreamDetail = {'width': 0, 'height': 0}
+    hdrType = None
+    videoCodec = None
+    aspectRatio = 2.38
+    dolbyvision_words = ['dv', 'dovi', 'dolbyvision']
+    hdr10plus_words = ['hdr10+', 'hdr10p']
+    sLowerCleanReleaseName = sCleanReleaseName.lower()
+    if any(word in sLowerCleanReleaseName for word in dolbyvision_words):
+        hdrType = 'dolbyvision'
+    elif any(word in sLowerCleanReleaseName for word in hdr10plus_words):
+        hdrType = 'hdr10'
+    elif 'hdr' in sLowerCleanReleaseName:
+        hdrType = 'HDR'
+    if hdrType is not None :
+        videoStreamDetail['hdrtype'] = hdrType
+    h265_words = ['h265','x265','hevc']
+    h264_words = ['h264','x264']
+    if any(word in sLowerCleanReleaseName for word in h265_words):
+        videoCodec = 'h265'
+    elif any(word in sLowerCleanReleaseName for word in h264_words):
+        videoCodec = 'h264'
+    if videoCodec is not None :
+        VSlog(videoCodec)
+        videoStreamDetail['codec'] = videoCodec
+        videoStreamDetail['aspect'] = aspectRatio
+    return videoStreamDetail
+
+def getAudioStreamDetail(sCleanReleaseName):
+    sLowerCleanReleaseName = sCleanReleaseName.lower()
+    language = ''
+    audioCodec = ''
+    channels = 0
+    if '7.1' in sLowerCleanReleaseName:
+        channels = 8
+    elif '5.1' in sLowerCleanReleaseName or '6ch' in sLowerCleanReleaseName:
+        channels = 6
+    vff_words = ['vff', 'vfi', 'vfo', 'vof', 'vf2', 'truefrench', 'true french']
+    if any(word in sLowerCleanReleaseName for word in vff_words):
+        language = 'fr'
+    dtshdma_words = ['hdma','dtshd','dts.hd','dts-hd']
+    eac3_words = ['eac3','dd+','ddp']
+    truehd_words = ['thd','truehd','true-hd','true.hd','truhd']
+    dtsx_words = ['dts-x','dtsx','dts:x']
+    if any(word in sLowerCleanReleaseName for word in dtshdma_words):
+        audioCodec = 'dtshdma'
+    elif any(word in sLowerCleanReleaseName for word in dtsx_words):
+        audioCodec = 'dtsx'
+    elif any(word in sLowerCleanReleaseName for word in truehd_words):
+        audioCodec = 'truehd'
+    elif any(word in sLowerCleanReleaseName for word in eac3_words):
+        audioCodec = 'eac3'
+    elif 'ac3' in sLowerCleanReleaseName:
+        audioCodec = 'ac3'
+    audioStreamDetail = {'codec': audioCodec, 'channels':channels, 'language':language}
+    return audioStreamDetail
+
+def get_link_JYA(movie_query):
+    url = 'http://127.0.0.1:5000/get_movie_links'
+    params = {'query': movie_query}
+    movie_link = None
+    size_file = None
+    try:
+        response = requests.get(url, params=params)
+    except Exception as e:
+        dialog().VSinfo("La connexion à JYA a échouée")
+        raise
+
+    if response.status_code == 200:
+        response_data = response.json()
+        movie_link = response_data.get('data', {}).get('link', '')
+        size_file = response_data.get('data', {}).get('filesize', None)
+        torrent_title = response_data.get('data', {}).get('filename','')
+        
+    else:
+        VSlog("Erreur lors de la requête. Code d'erreur : " + response.text)
+    return movie_link, torrent_title, size_file
+
+def showJYAlink():
+    from resources.lib.gui.hoster import cHosterGui
+    oHosterGui = cHosterGui()
+    oGui = cGui()
+    oInputParameterHandler = cInputParameterHandler()
+    sTitle = oInputParameterHandler.getValue('sMovieTitle')
+    VSlog("Titre à chercher : ")
+    VSlog(sTitle)
+    movie_link, torrent_title, size_file = get_link_JYA(sTitle)
+    if movie_link is not None:
+        oHoster = oHosterGui.checkHoster(movie_link)
+        sDisplayName = sTitle
+        if torrent_title != '':
+            sCleanReleaseName = getCleanReleaseNameByUrl(torrent_title)
+        else:
+            sCleanReleaseName = getCleanReleaseNameByUrl(movie_link)
+        sDiplaySize = ''
+        sSizeGo = str(round( size_file / 1_073_741_824,1 ))
+        sDiplaySize = sSizeGo+'Go'
+        sDisplayName = sDisplayName +' [%s]' % sDiplaySize
+        oHoster.setSize(size_file)
+        oHoster.setDisplayName(sDisplayName)
+        oHoster.setFileName(sTitle)
+        oHoster.setReleaseName(sCleanReleaseName)
+        oHoster.setVideoStreamDetail(getVideoStreamDetail(sCleanReleaseName))
+        oHoster.setAudioStreamDetail(getAudioStreamDetail(sCleanReleaseName))
+        oHosterGui.showHoster(oGui, oHoster, movie_link, '')
+    oGui.setEndOfDirectory()
 
 def showHosters():
     oGui = cGui()
@@ -2465,20 +2571,29 @@ def showHosters():
 
     oOutputParameterHandler = cOutputParameterHandler()
     
-    # Associer les valeurs de '2160P' et 'UHD' avec '4K'
+    VSlog(oInputParameterHandler.getAllParameter())
+    
+    # Associer les res '2160P' et 'UHD' avec '4K'
     for key in ['2160P', 'UHD']:
         if key in listRes:
             if '4K' not in listRes:
                 listRes['4K'] = []
             listRes['4K'].extend(listRes[key])
             del listRes[key]
-    
+            
+    # Associer les res '1080P' et 'FULLHD' avec 'FHD'
+    for key in ['FHD', 'FULLHD']:
+        if key in listRes:
+            if '1080P' not in listRes:
+                listRes['1080P'] = []
+            listRes['1080P'].extend(listRes[key])
+            del listRes[key]
+            
     #Source JYA
+    oOutputParameterHandler.addParameter('sRes', '4K')
     oOutputParameterHandler.addParameter('sMovieTitle', sTitle)
-    res = "JYA"
-    oOutputParameterHandler.addParameter('sRes', res)
     sDisplayName = sTitle
-    sDisplayName += ' [%s]' % res
+    sDisplayName += ' [%s]' % "4K*"
     oGui.addLink(SITE_IDENTIFIER, 'showJYAlink', sDisplayName, 'host.png', '', oOutputParameterHandler)
     
     # Pre-trie pour insérer les résolutions inconnues, puis refaire un deuxième trie
@@ -2492,53 +2607,6 @@ def showHosters():
         sDisplayName = sTitle
         sDisplayName += ' [%s]' % res
         oGui.addLink(SITE_IDENTIFIER, 'showHoster', sDisplayName, 'host.png', '', oOutputParameterHandler)
-    oGui.setEndOfDirectory()
-    
-def get_link_JYA(movie_query):
-    url = 'http://127.0.0.1:5000/get_movie_links'
-    params = {'query': movie_query}
-    
-    try:
-        response = requests.get(url, params=params)
-    except Exception as e:
-        dialog().VSinfo("La connexion à JYA a échouée")
-        raise
-
-    if response.status_code == 200:
-        response_data = response.json()
-        # release_name = response_data.get('data', {}).get('filename', None)
-        movie_link = response_data.get('data', {}).get('link', '')
-        size_file = response_data.get('data', {}).get('filesize', None)
-        
-    else:
-        VSlog("Erreur lors de la requête. Code d'erreur : " + response.text)
-    return movie_link, size_file
-
-def showJYAlink():
-    from resources.lib.gui.hoster import cHosterGui
-    oHosterGui = cHosterGui()
-    oGui = cGui()
-    oInputParameterHandler = cInputParameterHandler()
-    sTitle = oInputParameterHandler.getValue('sMovieTitle')
-    VSlog("Titre à chercher : ")
-    VSlog(sTitle)
-    movie_link, size_file = get_link_JYA(sTitle)
-    VSlog(movie_link)
-    if movie_link is not None:
-        oHoster = oHosterGui.checkHoster(movie_link)
-        VSlog(oHoster)
-        sDisplayName = sTitle
-        VSlog(size_file)
-        sCleanReleaseName = getCleanReleaseNameByUrl(movie_link)
-        sDiplaySize = ''
-        sSizeGo = str(round( size_file / 1_073_741_824,1 ))
-        sDiplaySize = sSizeGo+'Go'
-        sDisplayName = sDisplayName +' [%s]' % sDiplaySize
-        oHoster.setSize(size_file)
-        oHoster.setDisplayName(sDisplayName)
-        oHoster.setFileName(sTitle)
-        oHoster.setReleaseName(sCleanReleaseName)
-        oHosterGui.showHoster(oGui, oHoster, movie_link, '')
     oGui.setEndOfDirectory()
 
 def showHoster():
@@ -2584,6 +2652,8 @@ def showHoster():
                         oHoster.setDisplayName(sDisplayName)
                         oHoster.setFileName(sTitle)
                         oHoster.setReleaseName(sCleanReleaseName)
+                        oHoster.setVideoStreamDetail(getVideoStreamDetail(sCleanReleaseName))
+                        oHoster.setAudioStreamDetail(getAudioStreamDetail(sCleanReleaseName))
                         mapHoster[iSize] = (copy.copy(oHoster), sHosterUrl, sCleanReleaseName)
     
     mSortedSize = sorted(mapHoster.items(), key=lambda x: x[0], reverse=True)

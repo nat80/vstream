@@ -14,6 +14,7 @@ from resources.lib.handler.inputParameterHandler import cInputParameterHandler
 from resources.lib.handler.outputParameterHandler import cOutputParameterHandler
 from resources.lib.handler.pluginHandler import cPluginHandler
 from resources.lib.util import QuotePlus
+from infotagger.listitem import ListItemInfoTag
 
 
 class cGui:
@@ -286,19 +287,37 @@ class cGui:
                     callback(value)
 
         oListItem = self.createListItem(oGuiElement)
-
-    # affiche tag HD
+        videoInfoTag = ListItemInfoTag(oListItem, 'video')
+        # affiche tag HD
         # https://alwinesch.github.io/group__python__xbmcgui__listitem.html#ga99c7bf16729b18b6378ea7069ee5b138
+        width = None
         sRes = oGuiElement.getRes()
         if sRes:
+            
             if '2160' in sRes:
-                oListItem.addStreamInfo('video', {'width': 3840, 'height': 2160})
+                width = 3840
+                height = 2160
             elif '1080' in sRes:
-                oListItem.addStreamInfo('video', {'width': 1920, 'height': 1080})
+                width = 1920
+                height = 1080
             elif '720' in sRes:
-                oListItem.addStreamInfo('video', {'width': 1280, 'height': 720})
+                width = 1280
+                height = 720
             elif '480' in sRes:
-                oListItem.addStreamInfo('video', {'width': 720, 'height': 576})
+                width = 720
+                height = 480
+        videoStreamDetail = oGuiElement.getVideoStreamDetail()
+        if videoStreamDetail:
+            if width :
+                videoStreamDetail['width'] = width
+                videoStreamDetail['height'] = height
+            videoInfoTag.add_stream_info('video', videoStreamDetail)
+        elif width:
+            videoInfoTag.add_stream_info('video', {'width': width, 'height': height, 'codec':'null'})
+            
+        audioStreamDetail = oGuiElement.getAudioStreamDetail()
+        if audioStreamDetail:
+            videoInfoTag.add_stream_info('audio', audioStreamDetail)
 
         sCat = oGuiElement.getCat()
         if sCat:
@@ -450,12 +469,6 @@ class cGui:
 
             videoInfoTag.setCast(data.get('cast', []))
             
-            # On passe par un objet xbmc.AudioStreamDetail pour pouvoir ajouter la releaseName dans la langue via mpaa
-            audiostream = xbmc.AudioStreamDetail(channels=0, language=data.get('mpaa', ""))
-            videoInfoTag.addAudioStream(audiostream)
-            # Test pour afficher le tag HDR
-            # videostream = xbmc.VideoStreamDetail(hdrtype='hdr10')
-            # oListItem.addVideoStream(videostream)
             
         oListItem.setArt({'poster': oGuiElement.getPoster(),
                           'thumb': oGuiElement.getThumbnail(),

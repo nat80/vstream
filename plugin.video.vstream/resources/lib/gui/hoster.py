@@ -40,7 +40,9 @@ class cHosterGui:
         
         oGuiElement.setSize(oHoster.getSize())
         oGuiElement.setReleaseName(oHoster.getReleaseName())
-
+        oGuiElement.setVideoStreamDetail(oHoster.getVideoStreamDetail())
+        oGuiElement.setAudioStreamDetail(oHoster.getAudioStreamDetail())
+        
         # Catégorie de lecture
         if oInputParameterHandler.exist('sCat'):
             sCat = oInputParameterHandler.getValue('sCat')

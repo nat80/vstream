@@ -17,6 +17,20 @@ class iHoster:
         self._mediaFile = None
         self._fileSize = None
         self._releaseName = None
+        self._videoStreamDetail = None
+        self._audioStreamDetail = None
+        
+    def setVideoStreamDetail(self, videoStreamDetail):
+        self._videoStreamDetail = videoStreamDetail
+    
+    def getVideoStreamDetail(self):
+        return self._videoStreamDetail
+    
+    def setAudioStreamDetail(self, audioStreamDetail):
+        self._audioStreamDetail = audioStreamDetail
+    
+    def getAudioStreamDetail(self):
+        return self._audioStreamDetail
 
     def setReleaseName(self, releaseName):
         self._releaseName = releaseName
@@ -24,11 +38,11 @@ class iHoster:
     def getReleaseName(self):
         return self._releaseName
 
-    def getSize(self):
-        return self._fileSize
-
     def setSize(self, size):     
         self._fileSize = size
+        
+    def getSize(self):
+        return self._fileSize
 
     def getPluginIdentifier(self):
         return self._pluginIdentifier

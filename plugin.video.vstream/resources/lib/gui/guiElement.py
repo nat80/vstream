@@ -72,6 +72,8 @@ class cGuiElement:
         self.__sCat = ''
         self.__sSize = 0
         self.__sReleaseName = ''
+        self.__videoStreamDetail = {}
+        self.__audioStreamDetail = {}
 
     def setSize(self, sSize):
         self.__sSize = sSize
@@ -84,6 +86,19 @@ class cGuiElement:
 
     def getReleaseName(self):
         return self.__sReleaseName
+    
+    def setVideoStreamDetail(self, videoStreamDetail):
+        self.__videoStreamDetail = videoStreamDetail
+    
+    def getVideoStreamDetail(self):
+        return self.__videoStreamDetail
+    
+    def setAudioStreamDetail(self, audioStreamDetail):
+        self.__audioStreamDetail = audioStreamDetail
+    
+    def getAudioStreamDetail(self):
+        return self.__audioStreamDetail
+    
     # def __len__(self): return self.__sCount
 
     # def getCount(self):
@@ -138,6 +153,8 @@ class cGuiElement:
             data = '720p'
         elif data.upper() in ('4K', 'UHD', '2160P'):
             data = '2160p'
+        elif data.upper() == 'SD':
+            data = '480p'
 
         self.__sRes = data
 
