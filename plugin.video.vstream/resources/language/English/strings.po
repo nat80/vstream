@@ -1273,3 +1273,16 @@ msgstr "Add to existing list"
 msgctxt "#31212"
 msgid "Select a list"
 msgstr "Select a list"
+
+# JYA API
+msgctxt "#40000"
+msgid "JYA API"
+msgstr "JYA API"
+
+msgctxt "#40001"
+msgid "JYA URL"
+msgstr "JYA URL"
+
+msgctxt "#40002"
+msgid "JYA token API"
+msgstr "JYA token API"

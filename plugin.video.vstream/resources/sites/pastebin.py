@@ -2513,8 +2513,9 @@ def getAudioStreamDetail(sCleanReleaseName):
     return audioStreamDetail
 
 def get_link_JYA(movie_query):
-    url = 'http://127.0.0.1:5000/get_movie_links'
-    params = {'query': movie_query}
+    url = addon().getSetting('jya_api_url')
+    apiKey = addon().getSetting('jya_api_token')
+    params = {'apikey': apiKey, 'query': movie_query}
     movie_link = None
     size_file = None
     try:
@@ -2525,9 +2526,12 @@ def get_link_JYA(movie_query):
 
     if response.status_code == 200:
         response_data = response.json()
-        movie_link = response_data.get('data', {}).get('link', '')
-        size_file = response_data.get('data', {}).get('filesize', None)
-        torrent_title = response_data.get('data', {}).get('filename','')
+        if response_data.get('status', '') == "success":
+            movie_link = response_data.get('data', {}).get('link', '')
+            size_file = response_data.get('data', {}).get('filesize', None)
+            torrent_title = response_data.get('data', {}).get('filename','')
+        else:
+            dialog().VSinfo(response_data.get('message', 'Erreur'))
         
     else:
         VSlog("Erreur lors de la requête. Code d'erreur : " + response.text)
@@ -2593,7 +2597,7 @@ def showHosters():
     oOutputParameterHandler.addParameter('sRes', '4K')
     oOutputParameterHandler.addParameter('sMovieTitle', sTitle)
     sDisplayName = sTitle
-    sDisplayName += ' [%s]' % "4K*"
+    sDisplayName += ' [%s]' % "4K+"
     oGui.addLink(SITE_IDENTIFIER, 'showJYAlink', sDisplayName, 'host.png', '', oOutputParameterHandler)
     
     # Pre-trie pour insérer les résolutions inconnues, puis refaire un deuxième trie
