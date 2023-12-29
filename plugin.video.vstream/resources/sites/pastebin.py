@@ -2512,12 +2512,13 @@ def getAudioStreamDetail(sCleanReleaseName):
     audioStreamDetail = {'codec': audioCodec, 'channels':channels, 'language':language}
     return audioStreamDetail
 
-def get_link_JYA(movie_query):
+def get_link_JYA(movie_query, sTmdbId):
     url = addon().getSetting('jya_api_url')
     apiKey = addon().getSetting('jya_api_token')
-    params = {'apikey': apiKey, 'query': movie_query}
+    params = {'apikey': apiKey, 'query': movie_query, 'tmdbid': sTmdbId}
     movie_link = None
     size_file = None
+    torrent_title = None
     try:
         response = requests.get(url, params=params)
     except Exception as e:
@@ -2543,9 +2544,8 @@ def showJYAlink():
     oGui = cGui()
     oInputParameterHandler = cInputParameterHandler()
     sTitle = oInputParameterHandler.getValue('sMovieTitle')
-    VSlog("Titre à chercher : ")
-    VSlog(sTitle)
-    movie_link, torrent_title, size_file = get_link_JYA(sTitle)
+    sTmdbId = oInputParameterHandler.getValue('sTmdbId')
+    movie_link, torrent_title, size_file = get_link_JYA(sTitle, sTmdbId)
     if movie_link is not None:
         oHoster = oHosterGui.checkHoster(movie_link)
         sDisplayName = sTitle
@@ -2575,7 +2575,7 @@ def showHosters():
 
     oOutputParameterHandler = cOutputParameterHandler()
     
-    VSlog(oInputParameterHandler.getAllParameter())
+    sTmdbId = oInputParameterHandler.getValue('sTmdbId')
     
     # Associer les res '2160P' et 'UHD' avec '4K'
     for key in ['2160P', 'UHD']:
@@ -2596,6 +2596,9 @@ def showHosters():
     #Source JYA
     oOutputParameterHandler.addParameter('sRes', '4K')
     oOutputParameterHandler.addParameter('sMovieTitle', sTitle)
+    oOutputParameterHandler.addParameter('sTmdbId', sTmdbId)
+    #Important pour marquer vu / progression
+    oOutputParameterHandler.addParameter('siteUrl', siteUrl)
     sDisplayName = sTitle
     sDisplayName += ' [%s]' % "4K+"
     oGui.addLink(SITE_IDENTIFIER, 'showJYAlink', sDisplayName, 'host.png', '', oOutputParameterHandler)
@@ -2605,6 +2608,9 @@ def showHosters():
     for res in sorted(listRes.keys(), key=trie_res):
         oOutputParameterHandler.addParameter('sMovieTitle', sTitle)
         oOutputParameterHandler.addParameter('lsHosterUrl', listRes[res])
+        #Important pour marquer vu / progression
+        oOutputParameterHandler.addParameter('siteUrl', siteUrl)
+        
         if res == "":
             res = "AUTRES"
         oOutputParameterHandler.addParameter('sRes', res)
