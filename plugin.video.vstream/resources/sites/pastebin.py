@@ -2432,7 +2432,7 @@ def getCleanReleaseNameByUrl(sHosterUrl):
     sReleaseName = Unquote(sReleaseName)
     sOriginalReleaseName = sReleaseName
     # regex pour garder seulement ce qu'il y a après la date
-    dateEpisodesPattern = r"(?:\d{4}|S\d{1,2}E\d{1,2})(?:[\s.()\[\]-]*)(.*)"
+    dateEpisodesPattern = r"(?:(?!1080|2160)\d{4}|S\d{1,2}E\d{1,2})(?:[\s.()\[\]-]*)(.*)"
     match = re.search(dateEpisodesPattern, sReleaseName)
     if match:
         sReleaseName = match.group(1).strip()
@@ -2449,20 +2449,37 @@ def getCleanReleaseNameByUrl(sHosterUrl):
     
 def getSizeByUrl(url):
     try:
-        response = requests.head(url)
+        response = requests.head(url, timeout=3)
         iSizeFile = int(response.headers.get('content-length', 0))
-    except:
+    except Exception as e:
+        VSlog(e)
         iSizeFile = 0
     return iSizeFile
 
 def getVideoStreamDetail(sCleanReleaseName):
-    videoStreamDetail = {'width': 0, 'height': 0}
+    videoStreamDetail = {}
     hdrType = None
     videoCodec = None
     aspectRatio = 2.38
     dolbyvision_words = ['dv', 'dovi', 'dolbyvision']
     hdr10plus_words = ['hdr10+', 'hdr10p']
     sLowerCleanReleaseName = sCleanReleaseName.lower()
+    uhd_words = ['uhd', '4k', '2160']
+    fhd_words = ['1080', 'fhd', 'fullhd', 'full hd', 'full-hd']
+    if any(word in sLowerCleanReleaseName for word in uhd_words):
+        width = 3840
+        height = 2160
+    elif any(word in sLowerCleanReleaseName for word in fhd_words):
+        width = 1920
+        height = 1080
+    elif '720' in sLowerCleanReleaseName:
+        width = 1280
+        height = 720
+    else:
+        width = 0
+        height = 0
+    videoStreamDetail['width'] = width
+    videoStreamDetail['height'] = height
     if any(word in sLowerCleanReleaseName for word in dolbyvision_words):
         hdrType = 'dolbyvision'
     elif any(word in sLowerCleanReleaseName for word in hdr10plus_words):
@@ -2472,13 +2489,12 @@ def getVideoStreamDetail(sCleanReleaseName):
     if hdrType is not None :
         videoStreamDetail['hdrtype'] = hdrType
     h265_words = ['h265','x265','hevc']
-    h264_words = ['h264','x264']
+    h264_words = ['h264','x264','avc']
     if any(word in sLowerCleanReleaseName for word in h265_words):
         videoCodec = 'h265'
     elif any(word in sLowerCleanReleaseName for word in h264_words):
         videoCodec = 'h264'
     if videoCodec is not None :
-        VSlog(videoCodec)
         videoStreamDetail['codec'] = videoCodec
         videoStreamDetail['aspect'] = aspectRatio
     return videoStreamDetail
@@ -2512,11 +2528,11 @@ def getAudioStreamDetail(sCleanReleaseName):
     audioStreamDetail = {'codec': audioCodec, 'channels':channels, 'language':language}
     return audioStreamDetail
 
-def get_link_JYA(movie_query, sTmdbId):
+def get_link_JYA(sQuery, sTmdbId, sMedia, sSaison, sEpisode):
     url = addon().getSetting('jya_api_url')
     apiKey = addon().getSetting('jya_api_token')
-    params = {'apikey': apiKey, 'query': movie_query, 'tmdbid': sTmdbId}
-    movie_link = None
+    params = {'apikey': apiKey, 'query': sQuery, 'tmdbid': sTmdbId, 'mediatype' : sMedia, 'season': sSaison, 'episode': sEpisode}
+    movie_links = []
     size_file = None
     torrent_title = None
     try:
@@ -2524,19 +2540,20 @@ def get_link_JYA(movie_query, sTmdbId):
     except Exception as e:
         dialog().VSinfo("La connexion à JYA a échouée")
         raise
-
+    
     if response.status_code == 200:
         response_data = response.json()
         if response_data.get('status', '') == "success":
-            movie_link = response_data.get('data', {}).get('link', '')
-            size_file = response_data.get('data', {}).get('filesize', None)
-            torrent_title = response_data.get('data', {}).get('filename','')
+            for link_item in response_data.get('data', {}).get('links', []):
+                movie_link = link_item.get('link', '')
+                torrent_title = link_item.get('filename','')
+                size_file = link_item.get('filesize', None)
+                movie_links.append((movie_link, torrent_title, size_file))
         else:
             dialog().VSinfo(response_data.get('message', 'Erreur'))
-        
     else:
         VSlog("Erreur lors de la requête. Code d'erreur : " + response.text)
-    return movie_link, torrent_title, size_file
+    return movie_links
 
 def showJYAlink():
     from resources.lib.gui.hoster import cHosterGui
@@ -2545,8 +2562,16 @@ def showJYAlink():
     oInputParameterHandler = cInputParameterHandler()
     sTitle = oInputParameterHandler.getValue('sMovieTitle')
     sTmdbId = oInputParameterHandler.getValue('sTmdbId')
-    movie_link, torrent_title, size_file = get_link_JYA(sTitle, sTmdbId)
-    if movie_link is not None:
+    # Utile pour déterminer si c'est un film ou une série
+    siteUrl = oInputParameterHandler.getValue('siteUrl')
+    
+    sUrl, params = siteUrl.split('&', 1)
+    aParams = dict(param.split('=') for param in params.split('&'))
+    sSaison = aParams['sSaison'] if 'sSaison' in aParams else None
+    sEpisode = aParams['sEpisode'] if 'sEpisode' in aParams else None
+    sMedia = 'tv' if sSaison else 'movie'
+    lMediaLinks = get_link_JYA(sTitle, sTmdbId, sMedia, sSaison, sEpisode)
+    for movie_link, torrent_title, size_file in lMediaLinks:
         oHoster = oHosterGui.checkHoster(movie_link)
         sDisplayName = sTitle
         if torrent_title != '':
@@ -2648,13 +2673,12 @@ def showHoster():
                 if oHoster:
                     sDisplayName = sTitle
                     iSize = getSizeByUrl(sHosterUrl)
-                    if iSize :
+                    if iSize is not None:
                         sCleanReleaseName = getCleanReleaseNameByUrl(sHosterUrl)
                         # Pas besoin de traiter la suite si le titre contient moins d'info que celui déjà présent de la même taille
                         if iSize in mapHoster and len(sTitle) <= len(mapHoster[iSize][2]):
                             continue
                         sDiplaySize = ''
-                        VSlog(iSize)
                         sSizeGo = str(round( iSize / 1_073_741_824,1 ))
                         sDiplaySize = sSizeGo+'Go'
                         sDisplayName = sDisplayName +' [%s]' % sDiplaySize

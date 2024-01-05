@@ -216,7 +216,9 @@ class UpNext:
             if tagLine:
                 sTitle = tagLine
             else:
-                sTitle = listItem.getLabel()
+                # sTitle = listItem.getLabel()
+                # Pour afficher le nom de la release et de la taille
+                sTitle = listItem.getLabel2()
 
             if not sDesc:
                 sDesc = infoTag.getPlot()
@@ -234,7 +236,7 @@ class UpNext:
             hostName = sHosterIdentifier
             if 'sHosterIdentifier' in aParams:
                 hostName = aParams['sHosterIdentifier']
-                if hostName != sHosterIdentifier:
+                if hostName not in sHosterIdentifier: # Correction sinon il prends le dernier fichier de la liste
                     continue
 
             sThumb = listItem.getArt('thumb')

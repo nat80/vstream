@@ -293,7 +293,6 @@ class cGui:
         width = None
         sRes = oGuiElement.getRes()
         if sRes:
-            
             if '2160' in sRes:
                 width = 3840
                 height = 2160
@@ -308,7 +307,8 @@ class cGui:
                 height = 480
         videoStreamDetail = oGuiElement.getVideoStreamDetail()
         if videoStreamDetail:
-            if width :
+            # Permet d'afficher la bonne résolution pour chaques fichiers
+            if width and videoStreamDetail.get('width', None) is None:
                 videoStreamDetail['width'] = width
                 videoStreamDetail['height'] = height
             videoInfoTag.add_stream_info('video', videoStreamDetail)
@@ -468,7 +468,10 @@ class cGui:
             videoInfoTag.setResumePoint(float(data.get('resumetime', 0.0)), float(data.get('totaltime', 0.0)))
 
             videoInfoTag.setCast(data.get('cast', []))
-            
+        
+        # Afficher le nom de la release + la taille dans la popup upnext
+        if oGuiElement.getReleaseName() != '':
+            oListItem.setLabel2(oGuiElement.getReleaseName()+' '+oGuiElement.getSizeGo())
             
         oListItem.setArt({'poster': oGuiElement.getPoster(),
                           'thumb': oGuiElement.getThumbnail(),
