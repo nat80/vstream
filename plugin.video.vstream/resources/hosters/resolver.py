@@ -12,6 +12,7 @@ class cHoster(iHoster):
 
     def setDisplayName(self, displayName):
         self._displayName = displayName + ' [COLOR violet]'+ self._defaultDisplayName + self.__sRealHost + '[/COLOR]'
+        # self._displayName = displayName
 
     def setRealHost(self, sName):
         self.__sRealHost = sName

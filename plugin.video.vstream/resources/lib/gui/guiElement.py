@@ -3,7 +3,7 @@
 import re
 import xbmc
 
-from resources.lib.comaddon import addon, isMatrix, isNexus
+from resources.lib.comaddon import VSlog, addon, isMatrix, isNexus
 from resources.lib.db import cDb
 from resources.lib.util import cUtil, QuoteSafe
 
@@ -470,6 +470,7 @@ class cGuiElement:
         return data
 
     def getInfoLabel(self):
+        VSlog('getInfoLabel')
         meta = {'title': xbmc.getInfoLabel('ListItem.title'),
                 # 'label': xbmc.getInfoLabel('ListItem.title'),
                 # 'originaltitle': xbmc.getInfoLabel('ListItem.originaltitle'),
@@ -579,6 +580,7 @@ class cGuiElement:
                 if self.__TmdbId:
                     kwargs['tmdb_id'] = self.__TmdbId
                 if self.__Year:
+                    VSlog(f'getMetadonne : {self.__Year}')
                     kwargs['year'] = self.__Year
                 if self.__Season:
                     kwargs['season'] = self.__Season
@@ -712,7 +714,9 @@ class cGuiElement:
         # Utilisation des infos connues si non trouvées
         if not self.getItemValue('plot') and self.getDescription():
             self.addItemValues('plot', self.getDescription())
-        if not self.getItemValue('year') and self.getYear():
+        VSlog(f'# Utilisation des infos connues si non trouvées year={self.getItemValue("year")}')
+        VSlog(f'# Utilisation des infos connues si non trouvées self.getYear()={self.getYear()}')
+        if not isinstance(self.getItemValue('year'), int):
             self.addItemValues('year', self.getYear())
         if not self.getItemValue('genre') and self.getGenre():
             self.addItemValues('genre', self.getGenre())

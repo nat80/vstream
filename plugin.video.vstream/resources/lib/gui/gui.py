@@ -72,6 +72,7 @@ class cGui:
 
         # a faire après avoir déterminé la cat et le meta
         oGuiElement.setTitle(sLabel)
+        # oGuiElement.setRawTitle(sLabel)
 
 
         # Si pas d'id TMDB pour un episode, on recupère le précédent qui vient de la série
@@ -104,7 +105,11 @@ class cGui:
             oGuiElement.setFileName(sTitle)
         else:
             oGuiElement.setFileName(sLabel)
-
+        sYear = oOutputParameterHandler.getValue('sYear')
+        if not oGuiElement.getYear() and isinstance(oOutputParameterHandler.getValue('sYear'),int):
+            oGuiElement.setYear(sYear)
+            
+        # if oOutputParameterHandler.getValue('isViewing')
         try:
             return self.addFolder(oGuiElement, oOutputParameterHandler)
         except Exception as error:
@@ -260,6 +265,9 @@ class cGui:
 
     # afficher les liens non playable
     def addFolder(self, oGuiElement, oOutputParameterHandler='', _isFolder=True):
+        VSlog("addFolder")
+        VSlog(f'oOutputParameterHandler.getValue("sYear") : {oOutputParameterHandler.getValue("sYear")}')
+        
         if _isFolder is False:
             cGui.CONTENT = 'files'
 

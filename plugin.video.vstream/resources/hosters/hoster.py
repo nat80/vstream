@@ -65,6 +65,7 @@ class iHoster:
 
     def setDisplayName(self, displayName):
         self._displayName = displayName + ' [COLOR ' + self.color + ']' + self._defaultDisplayName + '[/COLOR]'
+        # self._displayName = displayName
 
     def setMediaFile(self, mediaFile):
         self._mediaFile = mediaFile
