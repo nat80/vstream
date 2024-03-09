@@ -19,6 +19,7 @@ SITE_NAME = 'JYA'
 SITE_DESC = ' films remux'
 
 URL_MAIN = siteManager().getUrlMain(SITE_IDENTIFIER)
+URL_JYA = "http://192.168.1.50:3000/"
 
 MOVIE_NEWS = (URL_MAIN + 'filmsenstreaming/', 'showMovies')
 MOVIE_GENRES = (True, 'showMovieGenres')
@@ -30,7 +31,7 @@ SERIE_VOSTFR = (URL_MAIN + 'seriesenstreaming/series-vostfr/', 'showMovies')
 
 key_search_movies = '#searchsomemovies'
 key_search_series = '#searchsomeseries'
-URL_SEARCH = (URL_MAIN + 'get_movie_links2', 'showMovies')
+URL_SEARCH = (URL_JYA + 'get_media_links', 'showMovies')
 URL_SEARCH_MOVIES = (key_search_movies, 'showMovies')
 URL_SEARCH_SERIES = (key_search_series, 'showMovies')
 
@@ -47,11 +48,13 @@ def load():
     oGui = cGui()
 
     oOutputParameterHandler = cOutputParameterHandler()
-    # oOutputParameterHandler.addParameter('siteUrl', URL_SEARCH[0])
-    # oGui.addDir(SITE_IDENTIFIER, 'showSearch', 'Recherche Films & Series', 'search.png', oOutputParameterHandler)
+    oOutputParameterHandler.addParameter('siteUrl', URL_SEARCH[0])
+    oGui.addDir(SITE_IDENTIFIER, 'showSearch', 'Recherche Films & Series', 'search.png', oOutputParameterHandler)
+    
+    # showMovies('787699', 'Wonka', '2023')
 
-    oOutputParameterHandler.addParameter('siteUrl', MY_SEARCH_MOVIES[0])
-    oGui.addDir(SITE_IDENTIFIER, MY_SEARCH_MOVIES[1], 'Recherche Films', 'search.png', oOutputParameterHandler)
+    # oOutputParameterHandler.addParameter('siteUrl', MY_SEARCH_MOVIES[0])
+    # oGui.addDir(SITE_IDENTIFIER, MY_SEARCH_MOVIES[1], 'Recherche Films', 'search.png', oOutputParameterHandler)
 
     # oOutputParameterHandler.addParameter('siteUrl', MOVIE_NEWS[0])
     # oGui.addDir(SITE_IDENTIFIER, MOVIE_NEWS[1], 'Films (Derniers ajouts)', 'news.png', oOutputParameterHandler)
@@ -115,22 +118,22 @@ def load():
 #     oGui.setEndOfDirectory()
 
 
-def showSearchSerie():
-    oGui = cGui()
-    sSearchText = oGui.showKeyBoard()
-    if sSearchText:
-        sUrl = key_search_series + sSearchText
-        showMovies(sUrl)
-        oGui.setEndOfDirectory()
-        return
+# def showSearchSerie():
+#     oGui = cGui()
+#     sSearchText = oGui.showKeyBoard()
+#     if sSearchText:
+#         sUrl = key_search_series + sSearchText
+#         showMovies(sUrl)
+#         oGui.setEndOfDirectory()
+#         return
 
 
 
-
+# Fonction appelé par le player qui passe les informations du film ou série dans l'url
 def showSearchMovie(sTmdb2=''):
     VSlog("showSearchMovie")
     oDialog = dialog()
-    oDialog.VSinfo('Recherche en cours...')
+    oDialog.VSinfo('Recherche en cours (showSearchMovie)...')
     # progress = xbmcgui.DialogProgressBG()
     
     
@@ -143,72 +146,74 @@ def showSearchMovie(sTmdb2=''):
     sTmdbId = oInputParameterHandler.getValue('sTmdb')
     sYear = oInputParameterHandler.getValue('sYear')
     sTitle = oInputParameterHandler.getValue('sTitle')
-    VSlog("sTmdbId")
+    sSeason = oInputParameterHandler.getValue('sSeason')
+    sEpisode = oInputParameterHandler.getValue('sEpisode')
+    sThumb = oInputParameterHandler.getValue('sThumb')
+    sName = oInputParameterHandler.getValue('sName')
+    sPoster = oInputParameterHandler.getValue('sPoster')
+    sOriginaltitle = oInputParameterHandler.getValue('sOriginaltitle')
+    sFanArt = oInputParameterHandler.getValue('sFanArt')
+    VSlog("sFanArt")
+    VSlog(sFanArt)
+    VSlog("sTmdbId---11")
     VSlog(sTmdbId)
     VSlog("sYear")
     VSlog(sYear)
     VSlog("sTitle")
     VSlog(sTitle)
     
-    showMovies(sTmdbId, sTitle, sYear)
+    showMovies(sTmdbId, sTitle, sName, sYear, sSeason, sEpisode, sThumb, sPoster, sOriginaltitle)
     return
 
 
 def showSearch():
+    oDialog = dialog()
+    oDialog.VSinfo('Recherche en cours (showSearch)...')
+    
     VSlog("Calling showSearch")
     oInputParameterHandler = cInputParameterHandler()
+    # sUrl = oInputParameterHandler.getValue('siteUrl')
+    
     sTmdbId = oInputParameterHandler.getValue('sTmdb')
     sYear = oInputParameterHandler.getValue('sYear')
     sTitle = oInputParameterHandler.getValue('sTitle')
+    sTvShowTitle = oInputParameterHandler.getValue('sTvShowTitle')
+    
+    # if not sTmdbId:
+    #     sTmdbId = "157336"
+    #     sYear = "2014"
+    #     sTitle = "Interstellar"
+    
+    #Pour simuler une utilisation comme vstream
     oGui = cGui()
     sSearchText = oGui.showKeyBoard()
     if sSearchText:
         sUrl = sSearchText
-        VSlog("sSearchText")
-        VSlog(sSearchText)
-        showMovies(sTmdbId, sTitle, sYear)
+        VSlog("taper ici n'importequoi")
+        # showMovies(sTmdbId, sTitle, sTvShowTitle, sYear)
         oGui.setEndOfDirectory()
         return
 
-
-def showMovieGenres():
-    showGenres(URL_MAIN + 'filmsenstreaming/', '')
-
-
-def showSerieGenres():
-    showGenres(URL_MAIN + 'seriesenstreaming/', '-s')
-
-
-def showGenres(urltype, s):
+# Permet d'afficher les films ou séries qui contiennent un lien pour aller vers showHosters
+def showMovies(sTmdbId, sTitle, sName, sYear, sSeason, sEpisode, sThumb, sPoster, sOriginaltitle):
+    
+    VSlog("sPoster")
+    VSlog(sPoster)
+    
+    # On détermine ici sMedia
+    sMedia = 'serie' if sSeason else 'film'
+    
+    VSlog('sThumbsThumbsThumbsThumbsThumbsThumb')
+    VSlog(sThumb)
     oGui = cGui()
-
-    liste = []
-    listegenre = ['action', 'animation', 'aventure', 'biopic', 'comedie', 'drame', 'documentaire', 'epouvante-horreur',
-                  'espionnage', 'famille', 'fantastique', 'guerre', 'historique', 'policier', 'romance',
-                  'science-fiction', 'thriller', 'western']
-
-    # https://www.filmoflix.net/filmsenstreaming/action/
-    # https://www.filmoflix.net/seriesenstreaming/action-s/
-
-    for igenre in listegenre:
-        liste.append([igenre.capitalize(), urltype + igenre + s + '/'])
-
-    oOutputParameterHandler = cOutputParameterHandler()
-    for sTitle, sUrl in liste:
-        oOutputParameterHandler.addParameter('siteUrl', sUrl)
-        oGui.addDir(SITE_IDENTIFIER, 'showMovies', sTitle, 'genres.png', oOutputParameterHandler)
-
-    oGui.setEndOfDirectory()
-
-
-def showMovies(sTmdbId, sTitle, sYear, sSearch=''):
-    oGui = cGui()
-    oInputParameterHandler = cInputParameterHandler()
-    siteUrl = oInputParameterHandler.getValue('siteUrl')
+    # oInputParameterHandler = cInputParameterHandler()
+    # siteUrl = oInputParameterHandler.getValue('siteUrl')
     # sYear = oInputParameterHandler.getValue('sYear')
     # sTitle = oInputParameterHandler.getValue('sTitle')
-    if not sTmdbId:
-        sTmdbId = oInputParameterHandler.getValue('sTmdbId')
+    
+    # if not sTmdbId:
+    #     sTmdbId = oInputParameterHandler.getValue('sTmdbId')
+    
     oOutputParameterHandler = cOutputParameterHandler()  # Define oOutputParameterHandler
     VSlog(sYear)
     if sTmdbId:
@@ -218,25 +223,98 @@ def showMovies(sTmdbId, sTitle, sYear, sSearch=''):
     if sYear:
         
         oOutputParameterHandler.addParameter('sYear', sYear)  # Utilisé par TMDB
-    VSlog("sTitle")
+    VSlog("sTitlesTitle")
     VSlog(sTitle)
-    if sTitle:
-        oOutputParameterHandler.addParameter('sMovieTitle', sTitle)
+    
+    oOutputParameterHandler.addParameter('sThumb', sPoster)
+    oOutputParameterHandler.addParameter('sDesc', '')
+    
+    VSlog("--sThumb--")
+    VSlog(sPoster)
 
-    sUrl = URL_MAIN
+    siteUrl = URL_MAIN
 
-    sUrl += '&sMedia=film'
+    siteUrl += '&sMedia='+sMedia
     if sYear:
-        sUrl += '&sYear=' + sYear
+        siteUrl += '&sYear=' + sYear
     if sTmdbId:
-        sUrl += '&idTMDB=' + sTmdbId
-        sUrl += '&sRes=4k'
-    sUrl += '&sTitle=' + sTitle
+        siteUrl += '&idTMDB=' + sTmdbId
+        siteUrl += '&sRes=4k'
+    siteUrl += '&sTitle=' + str(sTitle)
+    siteUrl += '&sOriginaltitle=' +sOriginaltitle
+    
+    VSlog("sMedia ::::")
+    VSlog(sMedia)
+    
+    oOutputParameterHandler.addParameter('sMedia', sMedia)
         
-    oOutputParameterHandler.addParameter('siteUrl', sUrl)
-    sDisplayTitle = sTitle
-    oGui.addMovie(SITE_IDENTIFIER, 'showHosters', sDisplayTitle, 'films.png', '', '', oOutputParameterHandler)
-    oGui.setEndOfDirectory()
+
+    VSlog("addMovie")
+    
+    VSlog("sSeason")
+    VSlog(sSeason)
+    
+    oOutputParameterHandler.addParameter('sOriginaltitle', sOriginaltitle)
+    
+    # L'appel showHosters ici permet d'afficher directement la liste des liens lors la lecture avec le player, sauf que ça ne marche pas car la date ne passe pas et il manque la jaquette.
+    if sMedia == 'serie':
+        
+        siteUrl += '&sSeason=' + sSeason
+        siteUrl += '&sEpisode=' + sEpisode
+        siteUrl += '&sMovieTitle=' + sName
+        
+        # sDisplaySaison = sSeason
+        # episode = sEpisode
+        # if sSeason and sSeason.isdigit():
+        #     sDisplaySaison = 'S{:02d}'.format(int(sSeason))
+        
+        # siteUrl = siteUrl + '&sEpisode=' + str(sEpisode)
+
+        # if sEpisode and str(sEpisode).isdigit():
+        #     if sSeason.isdigit():
+        #         episode = '{}E{:02d}'.format(sDisplaySaison, int(sEpisode))
+        #     else:
+        #         episode = 'E{:02d}'.format(int(episode))
+        # else:
+        #     episode = '{}{}'.format(sDisplaySaison, episode)
+        # sDisplayTitle = sTvShowTitle + ' - ' + episode
+
+        oOutputParameterHandler.addParameter('sSeason', sSeason)
+        oOutputParameterHandler.addParameter('sEpisode', sEpisode)
+        oOutputParameterHandler.addParameter('siteUrl', siteUrl)
+        oOutputParameterHandler.addParameter('sMovieTitle', sTitle)
+        
+        
+        
+        VSlog('sName')
+        VSlog(sName)
+        VSlog('sEpisode')
+        VSlog(sEpisode)
+        # sDisplayTitle = '1x01. La longue obscurité lumineuse'
+        # sDisplayTitle = sTvShowTitle
+        
+        # Dans addEpisode il faut passer le nom de le sName (tvshow title S01E01)
+        oGui.addEpisode(SITE_IDENTIFIER, 'showHosters', sName, 'series.png', sPoster, '', oOutputParameterHandler)
+        oGui.setEndOfDirectory()
+        
+        # VSlog('addTV addTV')
+        # addTV ça ne va pas car il renvoie un item série qui n'a pas de saison et épisode
+        # oGui.addTV(SITE_IDENTIFIER, 'showHosters', sDisplayTitle, 'series.png', '', '', oOutputParameterHandler)
+        # oGui.addEpisode(SITE_IDENTIFIER, 'showHosters', sDisplayTitle, 'series.png', sThumb, '', oOutputParameterHandler)
+        
+        # showHosters(sMedia, sTmdbId, sTitle, sYear, sSeason, sEpisode, sThumb)
+        
+    else:
+        VSlog('////////sThumb')
+        VSlog(sThumb)
+        # Il faut mettre le titre en anglais dans la variable sMovieTitle pour que trakt fonctionne
+        oOutputParameterHandler.addParameter('sMovieTitle', sOriginaltitle)
+        oOutputParameterHandler.addParameter('siteUrl', siteUrl)
+        oGui.addMovie(SITE_IDENTIFIER, 'showHosters', sTitle, 'films.png', '', '', oOutputParameterHandler)
+        oGui.setEndOfDirectory()
+    # showHosters(sTmdbId, sTitle, sYear, sSeason, sEpisode)
+    
+    # oGui.setEndOfDirectory()
     
 # def showHosters(sTmdb):
 #     VSlog("showHosters")
@@ -266,39 +344,83 @@ def showMovies(sTmdbId, sTitle, sYear, sSearch=''):
 #     oGui.setEndOfDirectory()
 
 
-def showHosters():
-    VSlog("TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT")
-    oHosterGui = cHosterGui()
-    oGui = cGui()
+def showHosters(sMedia=None, sTmdbId=None, sTitle=None, sYear=None, sSeason=None, sEpisode=None, sThumb=None):
+    
     oInputParameterHandler = cInputParameterHandler()
     
-    sTmdbId = oInputParameterHandler.getValue('sTmdbId')
-    sTitle = oInputParameterHandler.getValue('sTitle')
+    if not sTmdbId:
+    
+        sTmdbId = oInputParameterHandler.getValue('sTmdbId')
+        sTitle = oInputParameterHandler.getValue('sMovieTitle')
+        
     sYear = oInputParameterHandler.getValue('sYear')
+        
+    sSeason = oInputParameterHandler.getValue('sSeason')
+    sEpisode = oInputParameterHandler.getValue('sEpisode')
     
-    sThumb = ''
+    sMedia = oInputParameterHandler.getValue('sMedia')
+        
+    sThumb = oInputParameterHandler.getValue('sThumb')
     
+    sMediaTmdb = 'tv' if sMedia == 'serie' else 'movie'
+        
+    sOriginaltitle = oInputParameterHandler.getValue('sOriginaltitle')
+    
+    VSlog(oInputParameterHandler.getAllParameter())
+    
+    # sMovieTitle = oInputParameterHandler.getValue('sMovieTitle')
+        
+    # important pour gestion vu et progression
+    siteUrl = oInputParameterHandler.getValue('siteUrl')
+    
+    
+    
+    VSlog("Calling showHosters")
+    oHosterGui = cHosterGui()
+    oGui = cGui()
+    
+    
+    VSlog("-----sTmdbId")
+    VSlog(sTmdbId)
+    VSlog("------sTitle")
+    VSlog(sTitle)
+    VSlog("-------sYear")
+    VSlog(sYear)
+        
     VSlog("id_tmdb")
     # VSlog(sSearch)
     # progress_ = progress()
 
     # progress_ = progress().VScreate(SITE_NAME)
     # progress_.VSupdate(progress_, 100)
-    params = f'tmdbid={sTmdbId}'
-    VSlog(URL_SEARCH[0])
+    # sTmdbId = '157336'
+    
+    VSlog("sSeason")    
+    VSlog(sSeason)
+    VSlog(sEpisode)
+    
+    params = f'tmdbid={sTmdbId}&mediatype={sMediaTmdb}&season={sSeason}&episode={sEpisode}'
+    # params = f'tmdbid={sTmdbId}&mediatype={sMediaTmdb}'
+    
+    VSlog("params+")
+    VSlog(params)
     oRequest = cRequestHandler(URL_SEARCH[0])
     oRequest.setRequestType(0)
     oRequest.addParametersLine(params)
 
-    res = oRequest.request()
-
-    jsonRes = json.loads(res)
+    res = oRequest.request(True)
     
-    VSlog(jsonRes)
-    l_magnets_infos = jsonRes['data']['links']
+    VSlog(res)
+    if 'status' not in res:
+        dialog().VSinfo('Une erreur est survenue', 'Erreur')
+        return
+    elif res['status'] == 'error':
+        dialog().VSinfo(res['message'], 'Erreur')
+        return
+    else:
+        l_magnets_infos = res['data']['links']
     
     
-    total = len(l_magnets_infos)
     
     oOutputParameterHandler = cOutputParameterHandler()
     
@@ -312,39 +434,66 @@ def showHosters():
             torrent_title = torrents_infos['filename']
             filesize = torrents_infos['filesize']
             movie_link = torrents_infos['link']
-            title = torrents_infos['title']
+            # title = torrents_infos['title']
             release_year = torrents_infos['release_year']
             VSlog("release_year")
             VSlog(release_year)
         # progress_.VSupdate(progress_, total)
         oHoster = oHosterGui.checkHoster(movie_link)
-        
-        if not sYear or len(sYear) == 0:
-            sYear = release_year
-        if torrent_title != '':
-            sCleanReleaseName = getCleanReleaseNameByUrl(torrent_title)
-        else:
-            sCleanReleaseName = getCleanReleaseNameByUrl(movie_link)
-        if not sTitle:
-            sTitle = title
-        oOutputParameterHandler.addParameter('sMovieTitle', sTitle)
-        oOutputParameterHandler.addParameter('sTmdbId', sTmdbId)
-        oOutputParameterHandler.addParameter('sYear', str(sYear))
-        oOutputParameterHandler.addParameter('siteUrl', "siteUrl")
-        
-        VSlog(oOutputParameterHandler.getParameterAsUri())
-        sDisplayName = sTitle +' ('+release_year+') '
-        sDiplaySize = ''
-        sSizeGo = str(round( filesize / 1_073_741_824,1 ))
-        sDiplaySize = sSizeGo+'Go'
-        sDisplayName = sDisplayName +'['+sDiplaySize+']'
-        oHoster.setSize(filesize)
-        oHoster.setDisplayName(sDisplayName)
-        oHoster.setFileName(sTitle)
-        oHoster.setReleaseName(sCleanReleaseName)
-        oHoster.setVideoStreamDetail(getVideoStreamDetail(sCleanReleaseName))
-        oHoster.setAudioStreamDetail(getAudioStreamDetail(sCleanReleaseName))
-        oHosterGui.showHoster(oGui, oHoster, movie_link, sThumb)
+        # oHoster = oHosterGui.getHoster('alldebrid')
+        if oHoster:
+            if not sYear or len(sYear) == 0:
+                sYear = release_year
+            if torrent_title != '':
+                sCleanReleaseName = getCleanReleaseNameByUrl(torrent_title)
+            else:
+                sCleanReleaseName = getCleanReleaseNameByUrl(movie_link)
+            # if not sTitle:
+            #     sTitle = title
+            oOutputParameterHandler.addParameter('sTmdbId', sTmdbId)
+            oOutputParameterHandler.addParameter('sYear', str(sYear))
+            
+            #Important pour marquer vu / progression
+            oOutputParameterHandler.addParameter('siteUrl', siteUrl)
+            
+            VSlog(oOutputParameterHandler.getParameterAsUri())
+            
+            VSlog("sMedia")
+            VSlog(sMedia)
+            VSlog(sMediaTmdb)
+            
+            # Dans le cas ou on récupère les valeurs depuis une reprise (vu ou reprendre)
+            # if sMovieTitle:
+            #     sDisplayName = sMovieTitle
+                
+            if sYear and sMediaTmdb == 'movie':
+                sDisplayName = sTitle +' ('+sYear+') '
+                
+            else:
+                sDisplayName = sOriginaltitle
+                
+            if sMediaTmdb == 'tv':
+                sDisplayName = sTitle
+                        
+            VSlog("IIIICCCCii")
+            VSlog(sTitle)
+            VSlog(sDisplayName)
+            # sDiplaySize = ''
+            # sSizeGo = str(round( filesize / 1_073_741_824,1 ))
+            # sDiplaySize = sSizeGo+'Go'
+            # sDisplayName = sDisplayName +' ['+sDiplaySize+']'
+            # oHoster.
+            oHoster.setSize(filesize)
+            oHoster.setDisplayName(sDisplayName)
+            oHoster.setFileName(sDisplayName)
+            oHoster.setReleaseName(sCleanReleaseName)
+            oHoster.setVideoStreamDetail(getVideoStreamDetail(sCleanReleaseName))
+            oHoster.setAudioStreamDetail(getAudioStreamDetail(sCleanReleaseName))
+            
+            # oGui.addEpisode(SITE_IDENTIFIER, 'showHosters', sTitle, 'series.png', '', oOutputParameterHandler)
+            
+            VSlog("calling showHoster")
+            oHosterGui.showHoster(oGui, oHoster, movie_link, sThumb)
         
     # progress_.VSclose(progress_)
     
@@ -704,5 +853,37 @@ def showMovieHosters():
             oHoster.setDisplayName(sMovieTitle)
             oHoster.setFileName(sMovieTitle)
             cHosterGui().showHoster(oGui, oHoster, sHosterUrl, sThumb)
+
+    oGui.setEndOfDirectory()
+    
+    
+    
+def showSerieSaisons():
+    VSlog("showSerieSaisons")
+    oGui = cGui()
+    oInputParameterHandler = cInputParameterHandler()
+    siteUrl = oInputParameterHandler.getValue('siteUrl')
+    searchTitle = oInputParameterHandler.getValue('sMovieTitle')
+    searchYear = oInputParameterHandler.getValue('sYear')
+    
+    sSeason = oInputParameterHandler.getValue('sSeason')
+    VSlog("sSeason"+sSeason)
+    
+    sEpisode = oInputParameterHandler.getValue('sEpisode')
+    VSlog("sEpisode"+sEpisode)
+    # Proposer les différentes saisons
+    oOutputParameterHandler = cOutputParameterHandler()
+    
+    sDisplaySaison = sSeason
+    if sSeason.isdigit():
+        sDisplaySaison = 'S{:02d}'.format(int(sSeason))
+        sDisplayTitle = searchTitle + ' - ' + sDisplaySaison
+    else:
+        sDisplayTitle = '[' + sDisplaySaison + ']' + ' - ' + searchTitle
+    # sUrl = siteUrl + '&sSeason=' + sSeason
+    oOutputParameterHandler.addParameter('siteUrl', '')
+    oOutputParameterHandler.addParameter('saisonUrl', 'test')
+    oOutputParameterHandler.addParameter('sMovieTitle', sDisplayTitle) # on ne passe pas sTitre afin de pouvoir mettre la saison en marque-page
+    oGui.addSeason(SITE_IDENTIFIER, 'showEpisodesLinks', sDisplayTitle, 'series.png', '', '', oOutputParameterHandler)
 
     oGui.setEndOfDirectory()

@@ -57,3 +57,19 @@ Pour participer directement au projet (Uniquement les développeurs):
 
 
 Bon Film ++
+
+
+Comment fonctione le player :
+
+utiliser {tmdb} pour les séries (voir même pour les films)
+
+"play_movie": [
+        "plugin://plugin.video.vstream/?site=jya_app&function=showSearchMovie&title=Recherche+Films&siteUrl=http%3A%2F%2Fvenom%2F&sFav=showSearchMovie&sTmdb={id}&sTitle={title}&sYear={year}",
+        {
+            "title": "(?i)^(\\[.*\\])?.*{title}.*(\\[.*\\])?$",
+            "year": "{year}"
+        }
+    ],
+
+les règles title et year sont importante pour le play movie car il va selectionner directement le film qui correspond 
+

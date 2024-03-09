@@ -1,0 +1,12 @@
+{
+    "name": "jya",
+    "plugin": "plugin.video.vstream",
+    "priority": 100,
+    "play_movie": "plugin://plugin.video.vstream/?site=jya_app&function=showSearchMovie&title=Recherche+Films&siteUrl=http%3A%2F%2Fvenom%2F&sFav=showSearchMovie&sTmdb={id}&sTitle={title}&sYear={year}",
+    "play_episode": "plugin://plugin.video.vstream/?site=jya_app&function=showSearchMovie&title=Recherche+Films&siteUrl=http%3A%2F%2Fvenom%2F&sFav=showSearchMovie&sTmdb={id}&sTitle={title}&sYear={year}&sSeason={season}&sEpisode={episode}",
+    "search_movie": "plugin://plugin.video.vstream/?site=jya_app&function=showSearchMovie&title=Recherche+Films&siteUrl=http%3A%2F%2Fvenom%2F&sFav=showSearchMovie&sTmdb={id}&sTitle={title}&sYear={year}",
+    "search_episode": "plugin://plugin.video.vstream/?site=jya_app&function=showSearchMovie&title=Recherche+Films&siteUrl=http%3A%2F%2Fvenom%2F&sFav=showSearchMovie&sTmdb={id}&sTitle={title}&sYear={year}&sSeason={season}&sEpisode={episode}",
+    "is_resolvable": "true",
+    "make_playlist": "upnext",
+    "disabled": "false"
+}

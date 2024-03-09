@@ -4,6 +4,8 @@
 import sys
 
 from resources.lib.util import UnquotePlus, Unquote
+import sys
+from resources.lib.comaddon import VSlog
 
 
 class cInputParameterHandler:
@@ -11,6 +13,7 @@ class cInputParameterHandler:
         aParams = dict()
         if len(sys.argv) >= 2 and len(sys.argv[2]) > 0:
             args = sys.argv[2].replace(' & ', ' ')
+            VSlog(args)
             aParams = dict(part.split('=') for part in args[1:].split('&'))
 
         self.__aParams = aParams

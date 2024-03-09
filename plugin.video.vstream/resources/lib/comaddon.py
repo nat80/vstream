@@ -360,17 +360,17 @@ VSlog('testtttttttttttt')
 
 # xbmc des fonctions pas des class
 def VSlog(e, level=xbmc.LOGDEBUG):
-    try:
-        # rapelle l'ID de l'addon pour être appelé hors addon
-        if (ADDONVS.getSetting('debug') == 'true'):
-            if xbmc.getInfoLabel('system.buildversion')[0:2] >= '19':
-                level = xbmc.LOGINFO
-            else:
-                level = xbmc.LOGNOTICE
-        xbmc.log('\t[PLUGIN] vStream: ' + str(e), level)
+    # try:
+    # rapelle l'ID de l'addon pour être appelé hors addon
+    if (ADDONVS.getSetting('debug') == 'true'):
+        if xbmc.getInfoLabel('system.buildversion')[0:2] >= '19':
+            level = xbmc.LOGINFO
+        else:
+            level = xbmc.LOGNOTICE
+    xbmc.log('\t[PLUGIN] vStream: ' + str(e), level)
 
-    except:
-        pass
+    # except:
+    #     pass
 
 
 def VSupdate():

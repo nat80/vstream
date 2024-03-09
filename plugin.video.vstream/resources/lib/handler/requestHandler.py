@@ -158,6 +158,8 @@ class cRequestHandler:
 
         if self.__aParamatersLine:
             sParameters = self.__aParamatersLine
+            VSlog("sParameters")
+            VSlog(sParameters)
         else:
             sParameters = self.__aParamaters
 
@@ -211,10 +213,10 @@ class cRequestHandler:
                         sContent = sContent.decode()
                     except:
                         # Decodage minimum obligatoire.
-                        try:
-                            sContent = sContent.decode('unicode-escape')
-                        except:
-                            pass
+                        # try:
+                        sContent = sContent.decode('unicode-escape')
+                        # except:
+                        #     pass
 
         except ConnectionError as e:
             # Retry with DNS only if addon is present

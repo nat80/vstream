@@ -374,5 +374,6 @@ class cPlayer(xbmc.Player):
             if sPlayerType == '2':
                 VSlog('playertype from config: dvdplayer')
                 return xbmc.PLAYER_CORE_DVDPLAYER
-        except:
+        except Exception as e:
+            VSlog('playertype from config: auto'+str(e))
             return False

@@ -365,36 +365,36 @@ def WindowsBoxes(sTitle, siteUrl, metaType, year, sSite, sFav, sCat):
                 grab = cTMDb()
                 sUrl = 'person/' + str(sid)
 
+                # try:
+                meta = grab.getUrl(sUrl, term="append_to_response=movie_credits,tv_credits")
+                meta_credits = meta['movie_credits']['cast']
+                self.credit(meta_credits, 5215)
+
                 try:
-                    meta = grab.getUrl(sUrl, term="append_to_response=movie_credits,tv_credits")
-                    meta_credits = meta['movie_credits']['cast']
-                    self.credit(meta_credits, 5215)
-
-                    try:
-                        sTitle = unicodedata.normalize('NFKD', meta['name']).encode('ascii', 'ignore')
-                    except:
-                        sTitle = 'Aucune information'
-
-                    if not meta['deathday']:
-                        today = date.today()
-                        try:
-                            birthday = datetime(*(time.strptime(meta['birthday'], '%Y-%m-%d')[0:6]))
-                            age = today.year - birthday.year - ((today.month, today.day) < (birthday.month, birthday.day))
-                            age = '%s Ans' % age
-                        except:
-                            age = ''
-                    else:
-                        age = meta['deathday']
-
-                    self.setProperty('Person_name', sTitle)
-                    self.setProperty('Person_birthday', meta['birthday'])
-                    self.setProperty('Person_place_of_birth', meta['place_of_birth'])
-                    self.setProperty('Person_deathday', str(age))
-                    self.setProperty('Person_biography', meta['biography'])
-                    self.setFocusId(9000)
-
+                    sTitle = unicodedata.normalize('NFKD', meta['name']).encode('ascii', 'ignore')
                 except:
-                    return
+                    sTitle = 'Aucune information'
+
+                if not meta['deathday']:
+                    today = date.today()
+                    try:
+                        birthday = datetime(*(time.strptime(meta['birthday'], '%Y-%m-%d')[0:6]))
+                        age = today.year - birthday.year - ((today.month, today.day) < (birthday.month, birthday.day))
+                        age = '%s Ans' % age
+                    except:
+                        age = ''
+                else:
+                    age = meta['deathday']
+
+                self.setProperty('Person_name', sTitle)
+                self.setProperty('Person_birthday', meta['birthday'])
+                self.setProperty('Person_place_of_birth', meta['place_of_birth'])
+                self.setProperty('Person_deathday', str(age))
+                self.setProperty('Person_biography', meta['biography'])
+                self.setFocusId(9000)
+
+                # except:
+                #     return
                 # self.getControl(50).setVisible(True)
                 self.setProperty('vstream_menu', 'Person')
 
@@ -414,12 +414,12 @@ def WindowsBoxes(sTitle, siteUrl, metaType, year, sSite, sFav, sCat):
                 except:
                     pass
 
-                try:
-                    meta = grab.getUrl(sUrl_recom)
-                    meta = meta['results']
-                    self.credit(meta, 5210)
-                except:
-                    return
+                # try:
+                meta = grab.getUrl(sUrl_recom)
+                meta = meta['results']
+                self.credit(meta, 5210)
+                # except:
+                #     return
 
             # click sur marque-page
             elif controlId == 10:

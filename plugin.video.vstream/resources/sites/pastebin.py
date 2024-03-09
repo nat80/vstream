@@ -2401,6 +2401,8 @@ def showEpisodesLinks(siteUrl=''):
     aParams = dict(param.split('=') for param in params.split('&'))
     sSaison = aParams['sSaison'] if 'sSaison' in aParams else None
     searchTitle = aParams['sTitle'].replace(' | ', ' & ')
+    
+    VSlog('sSaison: ' + str(sSaison))
 
     if not sSaison:
         oGui.setEndOfDirectory()
@@ -2541,9 +2543,9 @@ def getAudioStreamDetail(sCleanReleaseName):
     return audioStreamDetail
 
 def get_link_JYA(sQuery, sTmdbId, sMedia, sSaison, sEpisode):
-    url = addon().getSetting('jya_api_url')
-    apiKey = addon().getSetting('jya_api_token')
-    params = {'apikey': apiKey, 'query': sQuery, 'tmdbid': sTmdbId, 'mediatype' : sMedia, 'season': sSaison, 'episode': sEpisode}
+    # url = addon().getSetting('jya_api_url')
+    # apiKey = addon().getSetting('jya_api_token')
+    params = {'query': sQuery, 'tmdbid': sTmdbId, 'mediatype' : sMedia, 'season': sSaison, 'episode': sEpisode}
     movie_links = []
     size_file = None
     torrent_title = None
@@ -2640,8 +2642,8 @@ def showHosters():
     oOutputParameterHandler.addParameter('sTmdbId', sTmdbId)
     #Important pour marquer vu / progression
     oOutputParameterHandler.addParameter('siteUrl', siteUrl)
-    sDisplayName = sTitle +' ('+sYear+')'
-    sDisplayName += ' [%s]' % "4K+"
+    sDisplayName = sTitle +' ('+str(sYear)+')'
+    # sDisplayName += ' [%s]' % "4K+"
     oGui.addLink(SITE_IDENTIFIER, 'showJYAlink', sDisplayName, 'host.png', '', oOutputParameterHandler)
     
     # Pre-trie pour insérer les résolutions inconnues, puis refaire un deuxième trie
@@ -2655,7 +2657,7 @@ def showHosters():
         if res == "":
             res = "AUTRES"
         oOutputParameterHandler.addParameter('sRes', res)
-        sDisplayName = sTitle +' ('+sYear+')'
+        sDisplayName = sTitle +' ('+str(sYear)+')'
         sDisplayName += ' [%s]' % res
         oGui.addLink(SITE_IDENTIFIER, 'showHoster', sDisplayName, 'host.png', '', oOutputParameterHandler)
     oGui.setEndOfDirectory()

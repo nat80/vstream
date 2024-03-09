@@ -70,7 +70,7 @@ class cHosterGui:
             oGuiElement.setMediaUrl(sMediaFile)
             if self.ADDON.getSetting('display_info_file') == 'true':
                 oHoster.setDisplayName(sMediaFile)
-                oGuiElement.setTitle(oHoster.getFileName())  # permet de calculer le cleanTitle
+                # oGuiElement.setTitle(oHoster.getDisplayName())  # permet de calculer le cleanTitle
                 oGuiElement.setRawTitle(oHoster.getDisplayName())  # remplace le titre par le lien
             else:
                 # oGuiElement.setTitle(oHoster.getDisplayName())
@@ -80,7 +80,9 @@ class cHosterGui:
             oGuiElement.setRawTitle(oHoster.getDisplayName())
 
 
-        title = oGuiElement.getCleanTitle()
+        # title = oGuiElement.getCleanTitle()
+        title = oHoster.getDisplayName()
+        VSlog('Hoster - showHoster : ' + title)
         tvShowTitle = oGuiElement.getItemValue('tvshowtitle')
 
         oOutputParameterHandler.addParameter('sMediaUrl', sMediaUrl)
@@ -372,6 +374,8 @@ class cHosterGui:
         bGetRedirectUrl = oInputParameterHandler.getValue('bGetRedirectUrl')
         sFileName = oInputParameterHandler.getValue('sFileName')
         sTitle = oInputParameterHandler.getValue('sTitle')
+        
+        VSlog('Hoster - play sTitle: ' + sTitle)
         siteUrl = oInputParameterHandler.getValue('siteUrl')
         sCat = oInputParameterHandler.getValue('sCat')
         sMeta = oInputParameterHandler.getValue('sMeta')
@@ -409,6 +413,7 @@ class cHosterGui:
                         aLink = oHoster.getMediaLink()
 
                 if aLink[0]:
+                    VSlog('Hoster - play : ' + aLink[1])
                     oGuiElement = cGuiElement()
                     oGuiElement.setSiteName(self.SITE_NAME)
                     oGuiElement.setSiteUrl(siteUrl)
@@ -461,6 +466,7 @@ class cHosterGui:
             oGuiElement = cGuiElement()
             oGuiElement.setSiteName(self.SITE_NAME)
             oGuiElement.setMediaUrl(aLink[1])
+            VSlog('addToPlaylist, oGuiElement.setTitle(oHoster.getFileName()): '+oHoster.getFileName())
             oGuiElement.setTitle(oHoster.getFileName())
 
             from resources.lib.player import cPlayer

@@ -35,6 +35,7 @@ class cGui:
         return self.episodeListing
 
     def addNewDir(self, Type, sId, sFunction, sLabel, sIcon, sThumbnail='', sDesc='', oOutputParameterHandler='', sMeta=0, sCat=None):
+        VSlog("addNewDir----------"+Type+"----------"+sLabel+"------"+sThumbnail)
         oGuiElement = cGuiElement()
         # dir ou link => CONTENT par défaut = files
         if Type != 'dir' and Type != 'link':
@@ -69,10 +70,18 @@ class cGui:
         else:
             oOutputParameterHandler.addParameter('sMeta', sMeta)
             oGuiElement.setMeta(sMeta)
+            
+        oOutputParameterHandler.addParameter('sThumb',sThumbnail)
+        
+        
 
         # a faire après avoir déterminé la cat et le meta
+        
+        #le setTitle ajoute la date en couleur donc ça ne permet pas à script trakt de scrobber le film à cause du tag Color autour
         oGuiElement.setTitle(sLabel)
-        # oGuiElement.setRawTitle(sLabel)
+        
+        # il faudrait utiliser setRawTitle pour éviter le tag Color sauf qu'il génère un bug dans l'url qui termine par "&title" sans valeur après
+        # oGuiElement.setRawTitle("test")
 
 
         # Si pas d'id TMDB pour un episode, on recupère le précédent qui vient de la série
@@ -101,6 +110,8 @@ class cGui:
             oGuiElement.addItemProperties('isViewing', True)
 
         sTitle = oOutputParameterHandler.getValue('sMovieTitle')
+        VSlog("oOutputParameterHandler.getValue('sMovieTitle')")
+        VSlog(sTitle)
         if sTitle:
             oGuiElement.setFileName(sTitle)
         else:
@@ -130,6 +141,14 @@ class cGui:
 
     def addMovie(self, sId, sFunction, sLabel, sIcon, sThumbnail, sDesc, oOutputParameterHandler=''):
         movieUrl = oOutputParameterHandler.getValue('siteUrl')
+        VSlog(f'movieUrl : {movieUrl}')
+        # movieUrl = ''
+        VSlog(f'movieFunc : {sFunction}')
+        VSlog(f'sId : {sId}')
+        VSlog(f'sLabel : {sLabel}')
+        VSlog(f'sIcon : {sIcon}')
+        VSlog(f'sThumbnail : {sThumbnail}')
+        VSlog(f'sDesc : {sDesc}')
         oOutputParameterHandler.addParameter('movieUrl', QuotePlus(movieUrl))
         oOutputParameterHandler.addParameter('movieFunc', sFunction)
         return self.addNewDir('movies', sId, sFunction, sLabel, sIcon, sThumbnail, sDesc, oOutputParameterHandler, 1, 1)
@@ -255,7 +274,7 @@ class cGui:
         oGuiElement.setFunction('DoNothing')
         if not sLabel:
             sLabel = self.ADDON.VSlang(30204)
-        oGuiElement.setTitle(sLabel)
+        # oGuiElement.setTitle(sLabel)
         oGuiElement.setIcon(sIcon)
         oGuiElement.setThumbnail(oGuiElement.getIcon())
         oGuiElement.setMeta(0)
@@ -266,7 +285,7 @@ class cGui:
     # afficher les liens non playable
     def addFolder(self, oGuiElement, oOutputParameterHandler='', _isFolder=True):
         VSlog("addFolder")
-        VSlog(f'oOutputParameterHandler.getValue("sYear") : {oOutputParameterHandler.getValue("sYear")}')
+        VSlog(f'sThumb : {oOutputParameterHandler.getValue("sThumb")}')
         
         if _isFolder is False:
             cGui.CONTENT = 'files'
@@ -335,6 +354,9 @@ class cGui:
         sItemUrl = self.__createItemUrl(oGuiElement, oOutputParameterHandler)
 
         oOutputParameterHandler.addParameter('sTitleWatched', oGuiElement.getTitleWatched())
+        
+        VSlog("oGuiElement.getTitleWatched()")
+        VSlog(oGuiElement.getTitleWatched())
 
         oListItem = self.__createContextMenu(oGuiElement, oListItem)
 
@@ -368,11 +390,13 @@ class cGui:
         return oListItem
 
     def createListItem(self, oGuiElement):
-
         # Récupération des metadonnées par thread
         if oGuiElement.getMeta() and oGuiElement.getMetaAddon() == 'true':
+            VSlog("createListItem oGuiElement.getPoster() 1")
+            VSlog(oGuiElement.getPoster())
             return self.createListItemThread(oGuiElement)
-
+        
+        VSlog("pas de meta, appel direct")
         # pas de meta, appel direct
         return self._createListItem(oGuiElement)
 
@@ -386,11 +410,24 @@ class cGui:
         return oListItem
 
     def _createListItem(self, oGuiElement, oListItem=None):
+        
+        #Garder en mémoire le poster depuis oGuiElement car après il change de valeur et je ne sais pas pourquoi
+        poster = oGuiElement.getPoster()
+        
+        sThumb = oGuiElement.getThumbnail()
+        VSlog("oGuiElement.getThumbnail() 1")
+        VSlog(oGuiElement.getThumbnail())
+        
+        VSlog("createListItem oGuiElement.getPoster() 2bis")
+        VSlog(oGuiElement.getPoster())
 
         # Enleve les elements vides
         data = {key: val for key, val in oGuiElement.getItemValues().items() if val != ""}
 
         itemTitle = oGuiElement.getTitle()
+        
+        VSlog("itemTitle")
+        VSlog(itemTitle)
 
         sMediaUrl = oGuiElement.getMediaUrl()
 
@@ -448,7 +485,13 @@ class cGui:
             oListItem.setInfo(oGuiElement.getType(), data)
 
         else:
+            VSlog("createListItem oGuiElement.getPoster() 3")
+            VSlog(oGuiElement.getPoster())
             videoInfoTag = oListItem.getVideoInfoTag()
+            
+            VSlog("data.get('originaltitle', "")")
+            VSlog(data.get('originaltitle', ""))
+            
 
             # https://alwinesch.github.io/class_x_b_m_c_addon_1_1xbmc_1_1_info_tag_video.html
             # gestion des valeurs par defaut si non renseignées
@@ -471,23 +514,42 @@ class cGui:
             videoInfoTag.setWriters(list(data.get('writer', '').split("/")))
             videoInfoTag.setDirectors(list(data.get('director', '').split("/")))
             videoInfoTag.setGenres(''.join(data.get('genre', [""])).split('/'))
-            videoInfoTag.setSeason(int(data.get('season', 0)))
-            videoInfoTag.setEpisode(int(data.get('episode', 0)))
+            videoInfoTag.setSeason(int(data.get('season', -1)))
+            videoInfoTag.setEpisode(int(data.get('episode', -1)))
             videoInfoTag.setResumePoint(float(data.get('resumetime', 0.0)), float(data.get('totaltime', 0.0)))
 
             videoInfoTag.setCast(data.get('cast', []))
+            
+            # Permet de faire un scrobbling plus précis avec Script trakt
+            VSlog("tmdb id")
+            VSlog(oGuiElement.getTmdbId())
+            videoInfoTag.setUniqueIDs({'tmdb': oGuiElement.getTmdbId()}, 'tmdb')
+            
+            VSlog("createListItem oGuiElement.getPoster() 4")
+            VSlog(oGuiElement.getPoster())
+            
+            VSlog("oGuiElement.getThumbnail() 2")
+            VSlog(oGuiElement.getThumbnail())
+            
         
         # Afficher le nom de la release + la taille dans la popup upnext
         if oGuiElement.getReleaseName() != '':
             oListItem.setLabel2(oGuiElement.getReleaseName()+' '+oGuiElement.getSizeGo())
-            
-        oListItem.setArt({'poster': oGuiElement.getPoster(),
+        
+        VSlog("oGuiElement.getFanart()")
+        VSlog(oGuiElement.getFanart())
+        
+        oListItem.setArt({'poster': poster,
                           'thumb': oGuiElement.getThumbnail(),
                           'icon': oGuiElement.getIcon(),
                           'fanart': oGuiElement.getFanart()})
 
         aProperties = oGuiElement.getItemProperties()
         for sPropertyKey, sPropertyValue in aProperties.items():
+            VSlog("sPropertyKey")
+            VSlog(sPropertyKey)
+            VSlog("sPropertyValue")
+            VSlog(sPropertyValue)
             oListItem.setProperty(sPropertyKey, str(sPropertyValue))
 
         return oListItem

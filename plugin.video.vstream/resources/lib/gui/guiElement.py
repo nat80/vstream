@@ -332,13 +332,24 @@ class cGuiElement:
             self.__sTitleWatched += '_' + sTitle2
         self.addItemValues('originaltitle', self.__sTitleWatched)
 
-        if sTitle2:
-            sTitle2 = '[COLOR %s]%s[/COLOR] ' % (self.sDecoColor, sTitle2)
+        # if sTitle2:
+        #     sTitle2 = '[COLOR %s]%s[/COLOR] ' % (self.sDecoColor, sTitle2)
+        
+        VSlog("sTitle2ok")
+        VSlog(sTitle2)
+        VSlog("sTitleok")
+        VSlog(sTitle)
 
         sTitle2 = sTitle2 + sTitle
 
+        # suppression des couleurs sur l'année
         if self.__Year:
-            sTitle2 = '%s [COLOR %s](%s)[/COLOR]' % (sTitle2, self.sDecoColor, self.__Year)
+            sTitle2 = '%s(%s)' % (sTitle, self.__Year)
+            
+        VSlog("self.getSeason()")
+        VSlog(self.getSeason())
+        
+        
 
         return sTitle2
 
@@ -571,29 +582,29 @@ class cGuiElement:
                              .replace('7', 'person').replace('8', 'network')
 
         meta = {}
-        try:
-            if sType:
-                args = (sType, sTitle)
-                kwargs = {}
-                if self.__ImdbId:
-                    kwargs['imdb_id'] = self.__ImdbId
-                if self.__TmdbId:
-                    kwargs['tmdb_id'] = self.__TmdbId
-                if self.__Year:
-                    VSlog(f'getMetadonne : {self.__Year}')
-                    kwargs['year'] = self.__Year
-                if self.__Season:
-                    kwargs['season'] = self.__Season
-                if self.__Episode:
-                    kwargs['episode'] = self.__Episode
+        # try:
+        if sType:
+            args = (sType, sTitle)
+            kwargs = {}
+            if self.__ImdbId:
+                kwargs['imdb_id'] = self.__ImdbId
+            if self.__TmdbId:
+                kwargs['tmdb_id'] = self.__TmdbId
+            if self.__Year:
+                VSlog(f'getMetadonne : {self.__Year}')
+                kwargs['year'] = self.__Year
+            if self.__Season:
+                kwargs['season'] = self.__Season
+            if self.__Episode:
+                kwargs['episode'] = self.__Episode
 
-                meta = TMDb.get_meta(*args, **kwargs)
-                if not meta:
-                    return
-            else:
+            meta = TMDb.get_meta(*args, **kwargs)
+            if not meta:
                 return
-        except:
+        else:
             return
+        # except:
+        #     return
 
         if 'media_type' in meta:
             meta.pop('media_type')
@@ -745,7 +756,9 @@ class cGuiElement:
         self.addItemProperties('sId', self.getSiteName())
         self.addItemProperties('sFav', self.getFunction())
         self.addItemProperties('sMeta', str(self.getMeta()))
-        if isNexus():
+        VSlog("self.getResumeTime()")
+        VSlog(self.getResumeTime())
+        if isNexus():   
             self.addItemValues('resumetime', self.getResumeTime())
             self.addItemValues('totaltime', self.getTotalTime())
         else:

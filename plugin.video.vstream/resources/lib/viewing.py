@@ -2,7 +2,7 @@
 # vStream https://github.com/Kodi-vStream/venom-xbmc-addons
 import xbmc
 
-from resources.lib.comaddon import dialog, addon, isMatrix
+from resources.lib.comaddon import VSlog, dialog, addon, isMatrix
 from resources.lib.db import cDb
 from resources.lib.handler.inputParameterHandler import cInputParameterHandler
 from resources.lib.handler.outputParameterHandler import cOutputParameterHandler
@@ -119,6 +119,8 @@ class cViewing:
                     oOutputParameterHandler = cOutputParameterHandler()
                     oOutputParameterHandler.addParameter('siteUrl', siteurl)
                     oOutputParameterHandler.addParameter('sMovieTitle', title)
+                    VSlog("getViewing sMovieTitle")
+                    VSlog(title)
                     oOutputParameterHandler.addParameter('sTmdbId', sTmdbId)
                     oOutputParameterHandler.addParameter('sTitleWatched', sTitleWatched)
                     oOutputParameterHandler.addParameter('sSeason', sSeason)
@@ -131,7 +133,8 @@ class cViewing:
                     resumetime, totaltime = DB.get_resume(meta)
                     oOutputParameterHandler.addParameter('ResumeTime', resumetime)
                     oOutputParameterHandler.addParameter('TotalTime', totaltime)
-
+                    
+                    # VSlog(title)
                     if cat == '1':
                         oListItem = oGui.addMovie(site, function, title, 'films.png', '', title, oOutputParameterHandler)
                     elif cat == '4':
@@ -140,7 +143,7 @@ class cViewing:
                         oListItem = oGui.addMisc(site, function, title, 'buzz.png', '', title, oOutputParameterHandler)
                     else:
                         oListItem = oGui.addTV(site, function, title, 'series.png', '', title, oOutputParameterHandler)
-
+                        
                     oOutputParameterHandler.addParameter('sTitleWatched', sTitleWatched)
                     oOutputParameterHandler.addParameter('sCat', cat)
                     oListItem.addMenu(SITE_IDENTIFIER, 'delViewing', self.ADDON.VSlang(30412), oOutputParameterHandler)
