@@ -73,9 +73,11 @@ class cHosterGui:
                 oGuiElement.setTitle(oHoster.getFileName())  # permet de calculer le cleanTitle
                 oGuiElement.setRawTitle(oHoster.getDisplayName())  # remplace le titre par le lien
             else:
-                oGuiElement.setTitle(oHoster.getDisplayName())
+                # oGuiElement.setTitle(oHoster.getDisplayName())
+                oGuiElement.setRawTitle(oHoster.getDisplayName())
         else:
-            oGuiElement.setTitle(oHoster.getDisplayName())
+            # oGuiElement.setTitle(oHoster.getDisplayName())
+            oGuiElement.setRawTitle(oHoster.getDisplayName())
 
 
         title = oGuiElement.getCleanTitle()

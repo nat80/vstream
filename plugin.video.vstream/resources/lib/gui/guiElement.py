@@ -3,7 +3,7 @@
 import re
 import xbmc
 
-from resources.lib.comaddon import addon, isMatrix, isNexus
+from resources.lib.comaddon import VSlog, addon, isMatrix, isNexus
 from resources.lib.db import cDb
 from resources.lib.util import cUtil, QuoteSafe
 
@@ -712,7 +712,7 @@ class cGuiElement:
         # Utilisation des infos connues si non trouvées
         if not self.getItemValue('plot') and self.getDescription():
             self.addItemValues('plot', self.getDescription())
-        if not self.getItemValue('year') and self.getYear():
+        if not isinstance(self.getItemValue('year'), int):
             self.addItemValues('year', self.getYear())
         if not self.getItemValue('genre') and self.getGenre():
             self.addItemValues('genre', self.getGenre())

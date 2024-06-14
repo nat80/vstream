@@ -2562,6 +2562,7 @@ def showJYAlink():
     oInputParameterHandler = cInputParameterHandler()
     sTitle = oInputParameterHandler.getValue('sMovieTitle')
     sTmdbId = oInputParameterHandler.getValue('sTmdbId')
+    sYear = oInputParameterHandler.getValue('sYear')
     # Utile pour déterminer si c'est un film ou une série
     siteUrl = oInputParameterHandler.getValue('siteUrl')
     
@@ -2573,7 +2574,7 @@ def showJYAlink():
     lMediaLinks = get_link_JYA(sTitle, sTmdbId, sMedia, sSaison, sEpisode)
     for movie_link, torrent_title, size_file in lMediaLinks:
         oHoster = oHosterGui.checkHoster(movie_link)
-        sDisplayName = sTitle
+        sDisplayName = f'{sTitle} ({sYear})'
         if torrent_title != '':
             sCleanReleaseName = getCleanReleaseNameByUrl(torrent_title)
         else:
@@ -2581,10 +2582,10 @@ def showJYAlink():
         sDiplaySize = ''
         sSizeGo = str(round( size_file / 1_073_741_824,1 ))
         sDiplaySize = sSizeGo+'Go'
-        sDisplayName = sDisplayName +' [%s]' % sDiplaySize
+        sDisplayName = sDisplayName +' '+ sDiplaySize
         oHoster.setSize(size_file)
         oHoster.setDisplayName(sDisplayName)
-        oHoster.setFileName(sTitle)
+        oHoster.setFileName(sDisplayName)
         oHoster.setReleaseName(sCleanReleaseName)
         oHoster.setVideoStreamDetail(getVideoStreamDetail(sCleanReleaseName))
         oHoster.setAudioStreamDetail(getAudioStreamDetail(sCleanReleaseName))
@@ -2594,6 +2595,7 @@ def showJYAlink():
 def showHosters():
     oGui = cGui()
     oInputParameterHandler = cInputParameterHandler()
+    sYear = oInputParameterHandler.getValue('sYear')
     sTitle = oInputParameterHandler.getValue('sMovieTitle').replace(' | ', ' & ')
     siteUrl = oInputParameterHandler.getValue('siteUrl')
     listRes = getHosterList(siteUrl)
@@ -2617,14 +2619,14 @@ def showHosters():
                 listRes['1080P'] = []
             listRes['1080P'].extend(listRes[key])
             del listRes[key]
-            
+    oOutputParameterHandler.addParameter('sYear', str(sYear))
     #Source JYA
     oOutputParameterHandler.addParameter('sRes', '4K')
     oOutputParameterHandler.addParameter('sMovieTitle', sTitle)
     oOutputParameterHandler.addParameter('sTmdbId', sTmdbId)
     #Important pour marquer vu / progression
     oOutputParameterHandler.addParameter('siteUrl', siteUrl)
-    sDisplayName = sTitle
+    sDisplayName = sTitle +' ('+sYear+')'
     sDisplayName += ' [%s]' % "4K+"
     oGui.addLink(SITE_IDENTIFIER, 'showJYAlink', sDisplayName, 'host.png', '', oOutputParameterHandler)
     
@@ -2639,7 +2641,7 @@ def showHosters():
         if res == "":
             res = "AUTRES"
         oOutputParameterHandler.addParameter('sRes', res)
-        sDisplayName = sTitle
+        sDisplayName = sTitle +' ('+sYear+')'
         sDisplayName += ' [%s]' % res
         oGui.addLink(SITE_IDENTIFIER, 'showHoster', sDisplayName, 'host.png', '', oOutputParameterHandler)
     oGui.setEndOfDirectory()
