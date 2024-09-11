@@ -1,6 +1,31 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addons>
-<addon id="plugin.video.vstream" name="vStream" version="2.9.6" provider-name="venom-xbmc-addons">
+<addon id="repository.vstream.mod"
+        name="vStream Mod Repository"
+        version="1.0.7~nathan"
+        provider-name="Venom">
+    <extension point="xbmc.addon.repository" name="vStream XBMC Addon Repository">
+        <dir>
+            <info compressed="false">https://raw.githubusercontent.com/nat80/vstream/releases/addons.xml</info>
+            <checksum>https://raw.githubusercontent.com/nat80/vstream/releases/addons.xml.md5</checksum>
+            <datadir zip="true">https://github.com/nat80/vstream/raw/releases/repo</datadir>
+        </dir>
+   </extension>
+
+    <extension point="xbmc.addon.metadata">
+        <summary lang="fr">vStream Repository</summary>
+        <description lang="fr">Installer vStream</description>
+        <summary lang="en">vStream Repository</summary>
+        <description lang="en">Download and install vStream</description>
+        <platform>all</platform>
+        <assets>
+            <icon>icon.png</icon>
+            <fanart>fanart.jpg</fanart>
+        </assets>
+    </extension>
+</addon>
+
+ <addon id="plugin.video.vstream" name="vStream" version="2.9.6.2+jya" provider-name="venom-xbmc-addons">
     <requires>
 
         <trycatch>
@@ -12,10 +37,11 @@
                 <import addon="xbmc.python" version="2.24.0"/>
             </catch>
         </trycatch>
-        <import addon="repository.vstream"/>
+        <import addon="repository.vstream.mod"/>
         <import addon="script.module.pyqrcode"/>
         <import addon="script.module.requests"/>
         <import addon="script.module.dnspython" optional="true"/>
+        <import addon="script.module.infotagger" version="0.0.3" />
         <!-- Pour le DEBUG        <import addon="script.module.pydevd" version="4.4.0"/> -->
     </requires>
 
@@ -76,27 +102,6 @@
             <screenshot>screenshot-02.jpg</screenshot>
             <screenshot>screenshot-03.jpg</screenshot>
         </assets>
-    </extension>
-</addon>
-
-<addon id="repository.vstream"
-       name="vStream Repository"
-        version="0.0.6"
-        provider-name="Venom">
-    <extension point="xbmc.addon.repository" name="vStream XBMC Addon Repository">
-    <dir>
-        <info compressed="false">https://raw.githubusercontent.com/Kodi-vStream/venom-xbmc-addons/master/addons.xml</info>
-        <checksum>https://raw.githubusercontent.com/Kodi-vStream/venom-xbmc-addons/master/addons.xml.md5</checksum>
-        <datadir zip="true">https://github.com/Kodi-vStream/venom-xbmc-addons/raw/master/repo</datadir>
-    </dir>
-   </extension>
-
-    <extension point="xbmc.addon.metadata">
-        <summary lang="fr">vStream Repository</summary>
-        <description lang="fr">Installer vStream</description>
-        <summary lang="en">vStream Repository</summary>
-        <description lang="en">Download and install vStream</description>
-        <platform>all</platform>
     </extension>
 </addon>
 </addons>
