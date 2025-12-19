@@ -30,7 +30,7 @@
     </extension>
 </addon>
 
- <addon id="plugin.video.vstream" name="vStream" version="3.1.17+kodex" provider-name="venom-xbmc-addons">
+ <addon id="plugin.video.vstream" name="vStream" version="3.1.18+kodex" provider-name="venom-xbmc-addons">
     <requires>
 
         <trycatch>
@@ -43,7 +43,6 @@
         </trycatch>
         <import addon="repository.vstream.mod"/>
         <import addon="repository.kodex"/>
-        <import addon="plugin.video.kodex"/>
         <import addon="script.module.pyqrcode"/>
         <import addon="script.module.requests"/>
         <import addon="script.module.dnspython" optional="true"/>
